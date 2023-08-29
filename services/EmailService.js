@@ -11,7 +11,7 @@ export const saveEmailandCode = (email, code) => {
 export const checkEmail = async(email) => {
     const emailResult = await Email.findOne({ email: email }).exec();
     if (emailResult) {
-        return true;
+        return emailResult;
     }
-    return false;
+    return null;
 };
