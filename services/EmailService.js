@@ -15,3 +15,8 @@ export const checkEmail = async(email) => {
     }
     return null;
 };
+
+export const deleteEmailandCode = async(email) => {
+    const result = await Email.findOneAndDelete({ email: email }).exec();
+    return result;
+}

@@ -8,4 +8,6 @@ let router = express.Router();
 
 router.post('/verify-email', UserControllers.verifyEmail);
 
+router.post('/verify-code', UserControllers.checkRegistrationCode);
+
 export default router;
