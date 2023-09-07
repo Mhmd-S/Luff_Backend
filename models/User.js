@@ -21,12 +21,13 @@ const UserSchema = new Schema({
     },
     dob: {
         type: Date,
-        default: null
+        default: null,
+        required: true,
     },
-    enrolledCourse: {
-        type: [Schema.Types.ObjectId],
-        ref: "Course",
-        default: []
+    gender: {
+        type: String,
+        // must be either male or female
+        enum: ['male', 'female']
     },
     matches: {
         type: [Schema.Types.ObjectId],
@@ -42,14 +43,10 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    primaryPicutre: {
+    profilePicutres: {
         type: String,
         default: null
     }, 
-    secondaryPictures: {
-        type: [String],
-        defualt: null
-    },
     blockedProfiles: {
         type: [Schema.Types.ObjectId],
         ref: "User",

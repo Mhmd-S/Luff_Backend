@@ -6,13 +6,10 @@ import session from 'express-session';
 import configurePassport from './auth/passport-config';
 import { AppError, errorHandlers } from './utils/errorHandler';
 import  MongoStore from 'connect-mongo';
-
-
+import { createServer } from 'http';
 
 // Import routers
 import UserRouter from './routes/UserRouter';
-
-import { createServer } from 'http';
 
 const app = express();
 
@@ -59,7 +56,6 @@ const sessionMiddleware = session({
 })
 
 // app.set('trust proxy', 1);
-
 app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
@@ -72,6 +68,7 @@ app.use((req,res,next) => {
     next(new AppError(404, 'Not Found'));
 });
 
+// Error handler
 app.use((err,req,res,next) => {
     console.log(err)
     if (err instanceof mongoose.Error.ValidationError) {

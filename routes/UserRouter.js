@@ -1,7 +1,4 @@
 import express from 'express';
-// import UserController from '../controllers/UserController.js';
-import mongoose from 'mongoose';
-import User from '../models/User.js';
 import * as UserControllers from '../controllers/UserController.js';
 
 let router = express.Router();
@@ -9,5 +6,15 @@ let router = express.Router();
 router.post('/verify-email', UserControllers.verifyEmail);
 
 router.post('/verify-code', UserControllers.checkRegistrationCode);
+
+router.post('/signup', UserControllers.registerUser);
+
+router.post('/signin', UserControllers.signinUser);
+
+router.put('/update-bio', UserControllers.modifyBio);
+
+router.put('/add-profile-pics', UserControllers.addProfilePicture);
+
+// router.delete('/delete-image', UserControllers.delete);
 
 export default router;
