@@ -11,7 +11,7 @@ export const AppError = function(type, detail) {
   
 export const errorHandlers = {
     handleError(err, res) {
-      res.status(err?.type || 500 ).json({status: "fail", data: err.detail })
+      res.status(err?.type || 500 ).json({status: "fail", message: err.detail })
     },
     handleDbCastError(err, res){
       res.status(400).json({ status: "fail", error: `Invalid ${err.path} value. Check the parameter/query.` })

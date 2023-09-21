@@ -2,6 +2,7 @@ import express from 'express';
 import * as UserControllers from '../controllers/UserController.js';
 
 let router = express.Router();
+
 router.post('/verify-email', UserControllers.verifyEmail);
 
 router.post('/verify-code', UserControllers.checkRegistrationCode);

@@ -11,12 +11,12 @@ const EmailSchema = new Schema({
         type: String,
         required: true,
     },
-    expireAt: {
+    createAt: {
         type: Date,
-        default: Date.now,
-        index: { expires: '5m' },
-    }
-}, {timestamps: true});
+        expiresL: 60*5,
+        default: Date.now()
+    },
+});
 
 const Email = mongoose.model('Email', EmailSchema);
 export default Email;
