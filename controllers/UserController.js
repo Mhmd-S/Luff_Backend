@@ -19,19 +19,19 @@ export const verifyEmail = [
 
         // If there are errors, send to error handler
         if (!errors.isEmpty()) {
-            next(new AppError(400, errors.array()));
+            return next(new AppError(400, errors.array()[0]));
         }
         
         // Check if email is already registered. If registered, send to error handler
         const isEmailRegistered = await UserService.checkEmailRegistered(req.body.email);
         if (isEmailRegistered) {
-            next(new AppError(400, 'Email already registered'));
+            return next(new AppError(400, 'Email already registered'));
         }
 
         // Check if a code is registered to the email. If in database less than 5 minutes, reject the request.
         const emailResult = await EmailService.checkEmail(req.body.email);
         if (emailResult) {
-            next(new AppError(400, 'Code already sent. Wait for 5 minutes to request new code.'));
+            return next(new AppError(400, 'Code already sent. Wait for 5 minutes to request new code.'));
         }
 
         // Generate code
@@ -57,7 +57,7 @@ export const verifyEmail = [
         // Send email
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) {
-                next(new AppError(500, 'Failed to send email'));
+                return next(new AppError(500, 'Failed to send email'));
             } 
         });
 
@@ -65,7 +65,7 @@ export const verifyEmail = [
         try{
             EmailService.saveEmailandCode(req.body.email, code);
         } catch(err) {
-            next(new AppError(500, 'Failed to process request. Please try again later'));
+            return next(new AppError(500, 'Failed to process request. Please try again later'));
         }
 
         // Return success message
@@ -90,7 +90,7 @@ export const checkRegistrationCode =[
 
         // If there are errors, return them
         if (!errors.isEmpty()) {
-            next(new AppError(400, errors.array()));
+            next(new AppError(400, errors.array()[0]));
         }
 
         // Check if code is correct
