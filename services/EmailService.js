@@ -6,7 +6,7 @@ export const saveEmailandCode = (email, code) => {
         code: code
     });
     newEmail.save();
-};
+}
 
 export const checkEmail = async(email) => {
     const emailResult = await Email.findOne({ email: email }).exec();
@@ -14,9 +14,18 @@ export const checkEmail = async(email) => {
         return emailResult;
     }
     return null;
-};
+}
+
 
 export const deleteEmailandCode = async(email) => {
     const result = await Email.findOneAndDelete({ email: email }).exec();
     return result;
+}
+
+export const checkEmailRegistered = async(email) => {
+    const result = await User.findOne({ email: email }).exec();
+    if (result) {
+        return true;
+    }
+    return false;
 }

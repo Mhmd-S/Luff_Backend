@@ -7,11 +7,16 @@ import { AppError } from "../utils/errorHandler.js";
 import bcrypt from 'bcryptjs';
 import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
+import { userControllerValidateEmail } from "../utils/userUtils.js";
 
 // Verify Email, generate code and send it to user
 export const verifyEmail = [
-    body('email').matches(/TP[0-9]{6}@mail.apu.edu.my/)
-    .withMessage('Invalid email address'),
+    body('email')
+    .matches(/^TP[0-9]{6}@mail.apu.edu.my$/)
+    .withMessage('Invalid email address')
+    .custom(async(email) => {
+        await userControllerValidateEmail(email);
+    }),
     async(req,res,next) => {
         
         // Check for validation errors
@@ -78,9 +83,12 @@ export const verifyEmail = [
 // Check if code is correct
 export const checkRegistrationCode =[
     body('email')
-    .matches(/TP[0-9]{6}@mail.apu.edu.my/)
-    .withMessage('Invalid email address')
-    .bail(),
+    .matches(/^TP[0-9]{6}@mail.apu.edu.my$/)
+    .withMessage('Invalid TP email address')
+    .bail()
+    .custom(async(email) => {
+        await userControllerValidateEmail(email);
+    }),
     body('code')
     .isUUID(4)
     .withMessage('Invalid code'),
@@ -93,13 +101,15 @@ export const checkRegistrationCode =[
             next(new AppError(400, errors.array()[0]));
         }
 
-        // Check if code is correct
+        // Check if email exists in databse and code is correct
         const emailResult = await EmailService.checkEmail(req.body.email);
         if (emailResult) {
             if (emailResult.code === req.body.code) {
                 await EmailService.deleteEmailandCode(req.body.email);
                 return res.status(200).json(200, { status: 'success', message: 'Code is correct'});
             }
+        } else {
+            return next(new AppError(400, 'Email not registered'));
         }
 
         return res.status(200).json({status: 'success', message: 'Code is incorrect'});
