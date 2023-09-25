@@ -12,11 +12,8 @@ import { userControllerValidateEmail } from "../utils/userUtils.js";
 // Verify Email, generate code and send it to user
 export const verifyEmail = [
     body('email')
-    .matches(/^TP[0-9]{6}@mail.apu.edu.my$/)
-    .withMessage('Invalid email address')
-    .custom(async(email) => {
-        await userControllerValidateEmail(email);
-    }),
+        .matches(/^TP[0-9]{6}@mail.apu.edu.my$/)
+        .withMessage('Invalid email address'),
     async(req,res,next) => {
         
         // Check for validation errors
@@ -85,10 +82,7 @@ export const checkRegistrationCode =[
     body('email')
     .matches(/^TP[0-9]{6}@mail.apu.edu.my$/)
     .withMessage('Invalid TP email address')
-    .bail()
-    .custom(async(email) => {
-        await userControllerValidateEmail(email);
-    }),
+    .bail(),
     body('code')
     .isUUID(4)
     .withMessage('Invalid code'),
@@ -98,7 +92,7 @@ export const checkRegistrationCode =[
 
         // If there are errors, return them
         if (!errors.isEmpty()) {
-            next(new AppError(400, errors.array()[0]));
+          return next(new AppError(400, errors.array()[0]));
         }
 
         // Check if email exists in databse and code is correct
@@ -122,51 +116,22 @@ export const registerUser = [
         .matches(/TP[0-9]{6}@mail.apu.edu.my/)
         .withMessage('Invalid email address')
         .escape(),
-    body('firstName')
-        .isLength({min: 1, max: 50})
-        .withMessage('First name is required, maximum 50 characters.')
-        .bail()
-        .isAlpha()
-        .withMessage('First name must only contain letters')
-        .escape(),
-    body('lastName')
-        .isLength({min: 1, max: 50})
-        .withMessage('Last name is required, maximum 50 characters.')
-        .bail()
-        .isAlpha()
-        .withMessage('First name must only contain letters')
-        .escape(),
     body('password')
-        .isLength({min: 8, max: 50})
-        .withMessage('Password is required, minimum 8 characters, maximum 50 characters.')
+        .isLength({min: 8, max: 15})
+        .withMessage('Password is required, minimum 8 characters, maximum 15 characters.')
         .bail()
-        .isStrongPassword().withMessage('Password must contain at least 1 lowercase, 1 uppercase, 1 number and 1 special character.')
-        .custom((value, {req}) => {
-            if (value !== req.body.confirmPassword) {
-                throw new Error('Passwords do not match');
-            }
-            return true;
-        })
         .escape(),
-    body('dob')
-        .exists().withMessage('dob is required')
-        .isDate().withMessage('Date of birth is required')
-        .isAfter('1990-01-01').withMessage('Invalid date of birth')
-        .isBefore('2005-01-01').withMessage('Invalid date of birth')
-        .escape(), 
-    body('gender')
-        .matches(/male|female/).withMessage('Gender is required to be male or female'),
     async(req, res, next) => {
         const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
-            next(new AppError(400, errors.array()));
+          return next(new AppError(400, errors.array()));
         }
 
         // Check if email is already registered. If registered, reject the request.
         const isEmailRegistered = await UserService.checkEmailRegistered(req.body.email);
         if (isEmailRegistered) {
-            next(new AppError(400, 'Email already registered'));
+          return next(new AppError(400, 'Email already registered'));
         }
 
         // Hash the user's password
@@ -175,15 +140,12 @@ export const registerUser = [
         const userObject = {
             email: req.body.email,
             password: hashedPassword,
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            dob: req.body.dob,
         }
         
         try {
             await UserService.createUser(userObject);
         } catch (err) {
-            next(new AppError(500, err));
+          return next(new AppError(500, err));
         }
 
         return res.status(200).json({status: 'success', message: 'User created'});
@@ -200,13 +162,13 @@ export const modifyBio = [
         const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
-            next(new AppError(400, errors.array()));
+          return next(new AppError(400, errors.array()));
         }
 
         try {
             await UserService.updateUserBio(req.user._id, req.body.bio);
         } catch (err) {
-            next(new AppError(500, err));
+          return next(new AppError(500, err));
         }
 
         return res.status(200).json({status: 'success', message: 'User profile updated'});
@@ -217,15 +179,15 @@ export const addProfilePicture = [
     (req,res,next) => {
         // Verify the image 
         if (!req.files.profilePicture) {
-            next(new AppError(400, 'No image uploaded'));
+          return next(new AppError(400, 'No image uploaded'));
         }
 
         // Check if the user has already uploaded 5 images
         if (req.user.profilePictures.length >= 5) {
-            next(new AppError(400, 'Maximum number of profile pictures reached'));
+          return next(new AppError(400, 'Maximum number of profile pictures reached'));
         }
 
-        next();
+      return next();
     },
     uploadUserProfileImage.fields([{ name: 'profilePicture', maxCount: 1 }]),
     async(req, res, next) => {
@@ -240,7 +202,7 @@ export const addProfilePicture = [
             try {
                 await UserService.addUserProfilePictures(req.user._id, profilePictureUrl);
             } catch (err) {
-                next(new AppError(500, err));
+              return next(new AppError(500, err));
             }
         }
 
@@ -289,7 +251,7 @@ export const signinUser = [
                 return next(new AppError(500, err));
               }
           
-              return res.json({ status: "success", data: user });
+              return res.status(200).json({ status: "success", data: user });
         });
         })(req, res, () => {
             // Empty callback to prevent further execution of middleware

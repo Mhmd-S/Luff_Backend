@@ -5,3 +5,8 @@ export const userControllerValidateEmail = async(email) => {
         }
         return true;
 }
+
+export const registerEmail = async(email) => {
+    const user = await UserService.registerEmail(email);
+    return user;
+}

@@ -13,16 +13,12 @@ const UserSchema = new Schema({
     },
     firstName:{
         type: String,
-        required: true,
     },
     lastName:{
         type: String,
-        required: true,
     },
     dob: {
         type: Date,
-        default: null,
-        required: true,
     },
     gender: {
         type: String,
@@ -39,10 +35,6 @@ const UserSchema = new Schema({
         ref: "User",
         default: []
     },
-    verified: {
-        type: Boolean,
-        default: false,
-    },
     profilePicutres: {
         type: String,
         default: null
@@ -55,6 +47,14 @@ const UserSchema = new Schema({
     bio: {
         type: String,
         default:''
+    },
+    verified: {
+        type: Boolean,
+        default: false,
+    },
+    onBoarded: {
+        type: Boolean,
+        default: false,
     }
 }, { timestamps: true })
 

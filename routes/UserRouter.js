@@ -7,7 +7,7 @@ router.post('/verify-email', UserControllers.verifyEmail);
 
 router.post('/verify-code', UserControllers.checkRegistrationCode);
 
-router.post('/signup', UserControllers.registerUser);
+router.post('/register', UserControllers.registerUser);
 
 router.post('/signin', UserControllers.signinUser);
 
