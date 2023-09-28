@@ -12,7 +12,7 @@ router.post('/verify-code', UserControllers.checkRegistrationCode);
 
 router.post('/register', UserControllers.registerUser);
 
-router.post('/signin', UserControllers.signinUser);
+router.post('/login', UserControllers.loginUser);
 
 router.put('/update-bio', checkAuth, UserControllers.modifyBio);
 

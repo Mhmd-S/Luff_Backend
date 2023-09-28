@@ -54,10 +54,11 @@ export const errorHandlers = {
 
   handleFormError(errors, res) {
     // Handle errors from React Hook Form
+
     const formattedErrors = {};
 
     for (const error of errors) {
-      formattedErrors[error.name] = error.message;
+      formattedErrors[error.path] = error.msg;
     }
 
     res.status(400).json({

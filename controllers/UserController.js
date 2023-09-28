@@ -210,40 +210,34 @@ export const addProfilePicture = [
     }
 ]
 
-export const signinUser = [
+export const loginUser = [
     body('email')
-      .exists().withMessage('Email field is required')
-      .isEmail().withMessage('Email is not valid')
-      .escape(),
+        .matches(/TP[0-9]{6}@mail.apu.edu.my/)
+        .withMessage('Invalid email address')
+        .escape(),
     body('password')
-      .exists().withMessage('Password field is required')
-      .escape(),
+        .isLength({min: 8, max: 15})
+        .withMessage('Invalid password')
+        .bail()
+        .escape(),
     (req, res, next) => {
         const errors = validationResult(req);
-            
-        // Making the error objects more concise. Instead of have 5 props into an object containing the error path and msg ex. { email: 'Email not valid' }
-        if (!errors.isEmpty()) { 
-            const errorsArray = errors.array();
-            const errorsObject = {};
-          
-            errorsArray.forEach((err) => {
-              errorsObject[err.path] = err.msg;
-            });
-            
-            throw new AppError(400, errorsObject);
-        }
+  
+        if (!errors.isEmpty()) {
+            return next(new AppError(400, errors.array()));
+          }
   
         if (req.isAuthenticated()) {
-            throw new AppError(400, {auth: 'User already logged in'});
+            throw new AppError(400, {message: 'User already logged in'});
         }
 
         passport.authenticate('user-local', (err, user, info) => {
             if (err) {
-                throw new AppError(500,  {auth: "Couldn't proccess your request. Try again later."});
+                throw new AppError(500,  {message: "Couldn't proccess your request. Try again later."});
             }
         
             if (!user) {
-              return next(new AppError(401, {auth: info.message}));
+              return next(new AppError(401, {status:'fail', message: info.message}));
             }
         
             req.login(user, (err) => {
@@ -251,7 +245,7 @@ export const signinUser = [
                 return next(new AppError(500, err));
               }
           
-              return res.status(200).json({ status: "success", data: user });
+              return res.status(200).json({ status: "success", message:'User logged in successfully', data: user });
         });
         })(req, res, () => {
             // Empty callback to prevent further execution of middleware
@@ -262,7 +256,7 @@ export const signinUser = [
 
 export const checkAuth = (req, res, next) => {
     if (req.isAuthenticated()) {
-        return res.status(200).json({ status: "success", data: req.user });
+        return res.status(200).json({ status: "success", message: 'User authenticated', data: req.user });
     }
 
     return next(new AppError(401, {auth: 'User not authenticated'}));
