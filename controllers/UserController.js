@@ -259,3 +259,11 @@ export const signinUser = [
         });
     }
 ];
+
+export const checkAuth = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return res.status(200).json({ status: "success", data: req.user });
+    }
+
+    return next(new AppError(401, {auth: 'User not authenticated'}));
+}
