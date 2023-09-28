@@ -2,60 +2,39 @@ import 'dotenv/config';
 import express from 'express';
 import {mongoose} from 'mongoose';
 import cors from 'cors';
-import session from 'express-session';
 import configurePassport from './auth/passport-config';
 import { AppError, errorHandlers } from './utils/errorHandler';
-import  MongoStore from 'connect-mongo';
 import { createServer } from 'http';
+import connectDatabase from './config/mogno-config';
+import { createSocketServer } from './config/socketio-config';
 
 // Import routers
 import UserRouter from './routes/UserRouter';
+import { configureSession } from './config/session-config';
+import { configureCors } from './config/cors-config';
 
 const app = express();
 
 const httpServer = createServer(app);
 
 // Setting up mongo database
-mongoose.set('strictQuery', false);
-
 async function main() {
-    await mongoose.connect(process.env.MONGO_URL);
+    await connectDatabase();
 }
 
-main().catch(err => console.error("Cannot connect to database"));
-// FIx the session
-// Configs for the global middleware
-const corsOption = { // Change later. // Config for the CORS
-    'origin': "*",
-    'methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    'preflightContinue': false,
-    'optionsSuccessStatus': 204,
-    // 'credentials' : true,
-  }
+main().catch((err) => console.error('Cannot connect to the database:', err));
 
-// Configuring passport
+// Configs
+// Configs for the global middleware
+const corsOption = configureCors();
 const passport = configurePassport();  
+const sessionMiddleware = configureSession();
 
 // Global middleware
 app.use(cors(corsOption));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-const sessionMiddleware = session({ 
-    secret: process.env.session_secret, 
-    resave:false, 
-    saveUninitialized:false, 
-    store: MongoStore.create({
-        client: mongoose.connection.getClient()
-    }),
-    cookie: {
-        maxAge: 30 * 24 * 60 * 60 * 60, // 30 days
-        // sameSite: 'none', 
-        // secure: true,
-    },
-})
-
-// app.set('trust proxy', 1);
+// app.set('trust proxy', 1); // For heroku, railway, etc
 app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
@@ -165,6 +144,8 @@ app.use((err,req,res,next) => {
 //     userSocketMap.delete(userId);
 //   });
 // });
+
+const io = createSocketServer(httpServer, sessionMiddleware, passport);
 
 httpServer.listen(process.env.PORT || 10000, ()=> {
     console.log(`Listening at at port ${process.env.PORT}`);

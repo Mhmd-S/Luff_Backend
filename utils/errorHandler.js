@@ -1,12 +1,9 @@
-export const AppError = function(type, detail) {
-  Error.call(this);
-  Error.captureStackTrace(this, this.constructor);
-  this.type = type;
-  this.detail = detail;
-};
-
-AppError.prototype = Object.create(Error.prototype);
-AppError.prototype.constructor = AppError;
+export class AppError extends Error {
+  constructor(statusCode, message) {
+      super(message);
+      this.statusCode = statusCode;
+  }
+}
 
 export const errorHandlers = {
   handleError(err, res) {
