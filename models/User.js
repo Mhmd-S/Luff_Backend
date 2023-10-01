@@ -11,10 +11,7 @@ const UserSchema = new Schema({
         type:String,
         required: true,
     },
-    firstName:{
-        type: String,
-    },
-    lastName:{
+    name:{
         type: String,
     },
     dob: {
@@ -52,9 +49,9 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    onBoarded: {
-        type: Boolean,
-        default: false,
+    onboardStep: {
+        type: Number,
+        default: 0,
     }
 }, { timestamps: true })
 

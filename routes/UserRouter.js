@@ -14,7 +14,11 @@ router.post('/register', UserControllers.registerUser);
 
 router.post('/login', UserControllers.loginUser);
 
-router.put('/update-bio', checkAuth, UserControllers.modifyBio);
+router.put('/update-name', checkAuth, UserControllers.updateName);
+
+router.put('/update-dob', checkAuth, UserControllers.updateDOB);
+
+router.put('/update-bio', checkAuth, UserControllers.updateBio);
 
 router.put('/add-profile-pics', checkAuth, UserControllers.addProfilePicture);
 

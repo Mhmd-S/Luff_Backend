@@ -1,12 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
 import {mongoose} from 'mongoose';
-import cors from 'cors';
-import configurePassport from './auth/passport-config';
+import configurePassport from './config/passport-config';
 import { AppError, errorHandlers } from './utils/errorHandler';
 import { createServer } from 'http';
 import connectDatabase from './config/mogno-config';
-import { createSocketServer } from './config/socketio-config';
 
 // Import routers
 import UserRouter from './routes/UserRouter';
@@ -25,13 +23,13 @@ async function main() {
 main().catch((err) => console.error('Cannot connect to the database:', err));
 
 // Configs
-// Configs for the global middleware
+// Configs for the global middleware 
 const corsOption = configureCors();
-const passport = configurePassport();  
 const sessionMiddleware = configureSession();
+const passport = configurePassport(); 
 
 // Global middleware
-app.use(cors(corsOption));
+app.use(corsOption);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // app.set('trust proxy', 1); // For heroku, railway, etc
@@ -145,7 +143,7 @@ app.use((err,req,res,next) => {
 //   });
 // });
 
-const io = createSocketServer(httpServer, sessionMiddleware, passport);
+// const io = createSocketServer(httpServer, sessionMiddleware, passport);
 
 httpServer.listen(process.env.PORT || 10000, ()=> {
     console.log(`Listening at at port ${process.env.PORT}`);

@@ -1,4 +1,6 @@
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import mongoose from 'mongoose';
 
 export const configureSession = () => {
     return session({

@@ -152,26 +152,66 @@ export const registerUser = [
     }
 ]
 
-// Complete User's profile. Add profile picture, bio and other details.
-export const modifyBio = [
-    body('bio')
-        .isLength({min: 25, max: 500})
-        .withMessage('Bio is required, minimum 25 and maximum 500 characters.')
+export const updateName = [
+    body('name')
+        .isLength({min: 2, max: 50})
+        .withMessage('First name is required, minimum 2 characters, maximum 50 characters.')
+        .bail()
         .escape(),
-    async(req, res, next) => {
+    async (req, res, next) => {
         const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
-          return next(new AppError(400, errors.array()));
+            return next(new AppError(400, errors.array()));
         }
 
         try {
-            await UserService.updateUserBio(req.user._id, req.body.bio);
-        } catch (err) {
-          return next(new AppError(500, err));
+            await UserService.updateName(req.user._id, req.body.name);
+        } catch(err) {
+            return next(new AppError(500, err));
+        }
+    }
+]
+export const updateDOB = [ 
+    body('dob')
+        .isDate()
+        .withMessage('Invalid date of birth')
+        .bail(),
+    async (req, res, next) => {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return next(new AppError(400, errors.array()));
         }
 
-        return res.status(200).json({status: 'success', message: 'User profile updated'});
+        try {
+            await UserService.updateDOB(req.user._id, req.body.dob);
+        } catch(err) {
+            return next(new AppError(500, err));
+        }
+
+    }
+]
+
+export const updateBio = [
+    body('bio')
+        .isLength({min: 25, max: 500})
+        .withMessage('Bio is required, minimum 25 and maximum 500 characters.')
+        .bail()
+        .escape(),
+    async (req, res, next) => {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return next(new AppError(400, errors.array()));
+        }
+
+        try {
+            await UserService.updateBio(req.user._id, req.body.bio);
+        } catch(err) {
+            return next(new AppError(500, err));
+        }
+
     }
 ]
 
@@ -210,6 +250,7 @@ export const addProfilePicture = [
     }
 ]
 
+// Nothing wrong with auth, just the erros are not being handled properly
 export const loginUser = [
     body('email')
         .matches(/TP[0-9]{6}@mail.apu.edu.my/)
@@ -226,18 +267,15 @@ export const loginUser = [
         if (!errors.isEmpty()) {
             return next(new AppError(400, errors.array()));
           }
-  
-        if (req.isAuthenticated()) {
-            throw new AppError(400, {message: 'User already logged in'});
-        }
 
         passport.authenticate('user-local', (err, user, info) => {
             if (err) {
-                throw new AppError(500,  {message: "Couldn't proccess your request. Try again later."});
+                throw new AppError(500, "Couldn't proccess your request. Try again later.");
             }
         
             if (!user) {
-              return next(new AppError(401, {status:'fail', message: info.message}));
+                console.log(info)
+                return next(new AppError(401, info.message));
             }
         
             req.login(user, (err) => {
@@ -245,12 +283,13 @@ export const loginUser = [
                 return next(new AppError(500, err));
               }
           
-              return res.status(200).json({ status: "success", message:'User logged in successfully', data: user });
+              return res.json({ status: "success", message:"Login succesfull" ,data: user });
         });
-        })(req, res, () => {
-            // Empty callback to prevent further execution of middleware
-            return;
-        });
+      })(req, res, () => {
+        // Empty callback to prevent further execution of middleware
+        return;
+      });
+
     }
 ];
 
@@ -259,5 +298,5 @@ export const checkAuth = (req, res, next) => {
         return res.status(200).json({ status: "success", message: 'User authenticated', data: req.user });
     }
 
-    return next(new AppError(401, {auth: 'User not authenticated'}));
+    return next(new AppError(401,'User not authenticated'));
 }

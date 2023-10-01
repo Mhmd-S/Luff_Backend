@@ -15,12 +15,22 @@ export const createUser = async(userObject) => {
     await user.save();
 }
 
-export const updateUserBio = async(userId, bio) => {
-    const result = User.findByIdAndUpdate(userId, { bio: bio }).exec();
+export const updateName = async(userId, newName) => {
+    const result = await User.findByIdandUpdate(userId, { name: newName }).exec();
     return result;
 }
 
-export const addUserProfilePictures = async(userId, profilePictures) => {
+export const updateBio = async(userId, newBio) => {
+    const result = await User.findByIdandUpdate(userId, { bio: newBio }).exec();
+    return result;
+}
+
+export const updateDOB = async(userId, newDOB) => {
+    const result = await User.findByIdandUpdate(userId, { dob: newDOB }).exec();
+    return result;
+}
+
+export const addProfilePictures = async(userId, profilePictures) => {
     const result = await User.findByIdAndUpdate(userId, { profilePictures: { $push: profilePictures } }).exec();
     return result;
 }
