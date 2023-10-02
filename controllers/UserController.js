@@ -170,6 +170,8 @@ export const updateName = [
         } catch(err) {
             return next(new AppError(500, err));
         }
+
+        res.status(200).json({status: 'success', message: "User's name updated"});
     }
 ]
 export const updateDOB = [ 
@@ -190,6 +192,8 @@ export const updateDOB = [
             return next(new AppError(500, err));
         }
 
+        res.status(200).json({status: 'success', message: "User's date of birth updated"});
+
     }
 ]
 
@@ -203,7 +207,9 @@ export const updateBio = [
         const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
-            return next(new AppError(400, errors.array()));
+            const errorsArray = errors.array();
+            console.log(errorsArray);
+            return next(new AppError(400, errorsArray));
         }
 
         try {
@@ -211,6 +217,8 @@ export const updateBio = [
         } catch(err) {
             return next(new AppError(500, err));
         }
+
+        res.status(200).json({status: 'success', message: "User's bio updated"});
 
     }
 ]
@@ -222,8 +230,7 @@ export const addProfilePicture = [
           return next(new AppError(400, 'No image uploaded'));
         }
 
-        // Check if the user has already uploaded 5 images
-        if (req.user.profilePictures.length >= 5) {
+        if (req.user.profilePictures.length >= 6) {
           return next(new AppError(400, 'Maximum number of profile pictures reached'));
         }
 

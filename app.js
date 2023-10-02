@@ -47,11 +47,12 @@ app.use((req,res,next) => {
 
 // Error handler
 app.use((err,req,res,next) => {
-    console.log(err)
     if (err instanceof mongoose.Error.ValidationError) {
         errorHandlers.handleDbValidationError(err,res);
     }else if ( err instanceof mongoose.Error.CastError) {
-        errorHandlers.handleDbCastError(err,res);
+        errorHandlers.handleDbError(err,res);
+    }else if ( err.type === 400 ) {
+        errorHandlers.handleFormError(err,res);
     } else {
         errorHandlers.handleError(err,res);
     }

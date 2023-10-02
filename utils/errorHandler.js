@@ -1,19 +1,22 @@
-export class AppError extends Error {
-  constructor(statusCode, message) {
-      super(message);
-      this.statusCode = statusCode;
-  }
-}
+export const AppError = function(type, detail) {
+  Error.call(this);
+  Error.captureStackTrace(this, this.constructor);
+  this.type = type;
+  this.detail = detail;
+};
+
+AppError.prototype = Object.create(Error.prototype);
+AppError.prototype.constructor = AppError; 
 
 export const errorHandlers = {
   handleError(err, res) {
     // Default to a 500 Internal Server Error if no specific status is provided
-    const status = err?.type || 500;
+    const status = err?.statusCode || 500;
 
     // Customize the error response format
     const response = {
       status: "fail",
-      message: err.detail || "Internal Server Error",
+      message: err.message || "Internal Server Error",
     };
 
     // Log the error for debugging purposes
@@ -49,18 +52,17 @@ export const errorHandlers = {
     }
   },
 
-  handleFormError(errors, res) {
+  handleFormError(err, res) {
     // Handle errors from React Hook Form
-
-    const formattedErrors = {};
-
-    for (const error of errors) {
-      formattedErrors[error.path] = error.msg;
-    }
+    const errorsObject = {};
+  
+    err.detail.forEach((validationError) => {
+      errorsObject[validationError.path] = validationError.msg;
+    });
 
     res.status(400).json({
       status: "fail",
-      errors: formattedErrors,
+      message: errorsObject,
     });
   },
 };

@@ -16,17 +16,17 @@ export const createUser = async(userObject) => {
 }
 
 export const updateName = async(userId, newName) => {
-    const result = await User.findByIdandUpdate(userId, { name: newName }).exec();
+    const result = await User.findByIdAndUpdate(userId, { name: newName }).exec();
     return result;
 }
 
 export const updateBio = async(userId, newBio) => {
-    const result = await User.findByIdandUpdate(userId, { bio: newBio }).exec();
+    const result = await User.findByIdAndUpdate(userId, { bio: newBio }).exec();
     return result;
 }
 
 export const updateDOB = async(userId, newDOB) => {
-    const result = await User.findByIdandUpdate(userId, { dob: newDOB }).exec();
+    const result = await User.findByIdAndUpdate(userId, { dob: newDOB }).exec();
     return result;
 }
 
