@@ -66,7 +66,7 @@ export const uploadUserProfileImage = multer({
       cb(null, {fieldName: file.fieldname});
     },
     key: function (req, file, cb) {
-        cb(null, `profile_images/${Date.now().toString()}`)
+        cb(null, `profile_images/${req.user._id}/${Date.now().toString()}`)
     }
   })
 })

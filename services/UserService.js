@@ -30,7 +30,7 @@ export const updateDOB = async(userId, newDOB) => {
     return result;
 }
 
-export const addProfilePictures = async(userId, profilePictures) => {
+export const addProfilePicture = async(userId, profilePictures) => {
     const result = await User.findByIdAndUpdate(userId, { profilePictures: { $push: profilePictures } }).exec();
     return result;
 }

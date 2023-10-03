@@ -226,13 +226,13 @@ export const updateBio = [
 export const addProfilePicture = [
     (req,res,next) => {
         // Verify the image 
+        console.log(req?.files);
+        
         if (!req.files.profilePicture) {
           return next(new AppError(400, 'No image uploaded'));
         }
 
-        if (req.user.profilePictures.length >= 6) {
-          return next(new AppError(400, 'Maximum number of profile pictures reached'));
-        }
+        //  Check if user has a profile picture
 
       return next();
     },
@@ -247,9 +247,9 @@ export const addProfilePicture = [
 
             // Add profile picture's link to the user's profile
             try {
-                await UserService.addUserProfilePictures(req.user._id, profilePictureUrl);
+                await UserService.addProfilePicture(req.user._id, profilePictureUrl);
             } catch (err) {
-              return next(new AppError(500, err));
+                return next(new AppError(500, err));
             }
         }
 
