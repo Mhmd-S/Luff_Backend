@@ -35,8 +35,14 @@ export const updateGender = async(userId, newGender) => {
     return result;
 }
 
+export const updateOrientation = async(userId, newOrientation) => {
+    const result = await User.findByIdAndUpdate(userId, { orientation: newOrientation }).exec();
+    return result;
+}
+
 export const onboardStepUp = async(userId, step) => {
     const result = await User.findByIdAndUpdate(userId, { onboardStep: step }).exec();
+    return result;
 }
 
 export const addProfilePicture = async(userId, profilePictures) => {

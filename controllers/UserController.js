@@ -61,40 +61,37 @@ export const verifyEmail = async(req,res,next) => {
 
 // Check if code is correct
 export const checkRegistrationCode = async(req, res, next) => {
-        // Check if email exists in databse and code is correct
-        const emailResult = await EmailService.checkEmail(req.body.email);
-        if (emailResult) {
-            if (emailResult.code === req.body.code) {
-                await EmailService.deleteEmailandCode(req.body.email);
-                return res.status(200).json(200, { status: 'success', message: 'Code is correct'});
-            }
-        } else {
-            return next(new AppError(400, 'Email not registered'));
+    // Check if email exists in databse and code is correct
+    const emailResult = await EmailService.checkEmail(req.body.email);
+    if (emailResult) {
+        if (emailResult.code === req.body.code) {
+            await EmailService.deleteEmailandCode(req.body.email);
+            return res.status(200).json(200, { status: 'success', message: 'Code is correct'});
         }
-
-        return res.status(200).json({status: 'success', message: 'Code is incorrect'});
+    } else {
+        return next(new AppError(400, 'Email not registered'));
     }
+    return res.status(200).json({status: 'success', message: 'Code is incorrect'});
+}
 
 
 // Register user. Create a user with the main fields. Email, Name, Password and DOB.
 export const registerUser = async(req, res, next) => {
-        // Hash the user's password
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-        const userObject = {
-            email: req.body.email,
-            password: hashedPassword,
-        }
-        
-        try {
-            await UserService.createUser(userObject);
-        } catch (err) {
-          return next(new AppError(500, err));
-        }
-
-        return res.status(200).json({status: 'success', message: 'User created'});
+    // Hash the user's password
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const userObject = {
+        email: req.body.email,
+        password: hashedPassword,
+    }
+    
+    try {
+        await UserService.createUser(userObject);
+    } catch (err) {
+      return next(new AppError(500, err));
     }
 
+    return res.status(200).json({status: 'success', message: 'User created'});
+}
 
 export const updateName = async (req, res, next) => {
     try {
@@ -106,55 +103,55 @@ export const updateName = async (req, res, next) => {
 }
 
 export const updateDOB = async (req, res, next) => {
-        try {
-            await UserService.updateDOB(req.user._id, req.body.dob);
-        } catch(err) {
-            return next(new AppError(500, err));
-        }
-
-        res.status(200).json({status: 'success', message: "User's date of birth updated"});
+    try {
+        await UserService.updateDOB(req.user._id, req.body.dob);
+    } catch(err) {
+        return next(new AppError(500, err));
     }
+
+    res.status(200).json({status: 'success', message: "User's date of birth updated"});
+}
 
 
 export const updateBio = async (req, res, next) => {
-        try {
-            await UserService.updateBio(req.user._id, req.body.bio);
-        } catch(err) {
-            return next(new AppError(500, err));
-        }
-
-        res.status(200).json({status: 'success', message: "User's bio updated"});
+    try {
+        await UserService.updateBio(req.user._id, req.body.bio);
+    } catch(err) {
+        return next(new AppError(500, err));
     }
+
+    res.status(200).json({status: 'success', message: "User's bio updated"});
+}
 
 
 export const updateGender = async (req, res, next) => {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-            const errorsArray = errors.array();
-            return next(new AppError(400, errorsArray));
-        }
-
-        try {
-            await UserService.updateGender(req.user._id, req.body.gender);
-        } catch(err) {
-            return next(new AppError(500, err));
-        }
-
-        res.status(200).json({ status: 'success', message:"User's gender updated"});
+    try {
+        await UserService.updateGender(req.user._id, req.body.gender);
+    } catch(err) {
+        return next(new AppError(500, err));
     }
+
+    res.status(200).json({ status: 'success', message:"User's gender updated"});
+    }
+
+export const updateOrientation = async (req, res, next) => {
+    try {
+        await UserService.updateOrientation(req.user._id, req.body.gender);
+    } catch(err) {
+        return next(new AppError(500, err));
+    }
+
+    res.status(200).json({ status: 'success', message:"User's orientation updated"});
+}
 
 
 export const addProfilePicture = [
     uploadUserProfileImage.fields([{ name: 'profilePicture', maxCount: 1 }]),
     async(req, res, next) => {
-
         const profilePicturesKeys = Object.keys(req.files.profilePicture);
-
         // Check if there are any profile pictures uploaded
         if (profilePicturesKeys.length > 0) {
             const profilePictureUrl = req.files.profilePicture[profilePicturesKeys[0]].location;
-
             // Add profile picture's link to the user's profile
             try {
                 await UserService.addProfilePicture(req.user._id, profilePictureUrl);

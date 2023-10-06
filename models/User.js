@@ -22,6 +22,10 @@ const UserSchema = new Schema({
         // must be either male or female
         enum: ['male', 'female']
     },
+    orientation: {
+        type: String,
+        enum: ['male', 'female']
+    },
     matches: {
         type: [Schema.Types.ObjectId],
         ref: "User",
@@ -33,7 +37,7 @@ const UserSchema = new Schema({
         default: []
     },
     profilePicutres: {
-        type: String,
+        type: [String],
         default: null
     }, 
     blockedProfiles: {
