@@ -20,6 +20,8 @@ router.put('/update-dob', checkAuth, UserControllers.updateDOB);
 
 router.put('/update-bio', checkAuth, UserControllers.updateBio);
 
+router.put('/upadte-gender', checkAuth, UserControllers.updateGender);
+
 router.put('/add-profile-pic', checkAuth, UserControllers.addProfilePicture);
 
 // router.delete('/delete-image', checkAuth, UserControllers.delete);

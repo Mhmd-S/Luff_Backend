@@ -2,6 +2,7 @@ import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { AppError } from "./errorHandler";
 import multer from 'multer';
 import multerS3 from 'multer-s3';
+import path from 'path';
 
 const s3 = new S3Client({ 
     region: process.env.S3_REGION, 
@@ -37,10 +38,11 @@ export const deleteObjectFromBucket = async(url) => {
   }
 }
 
-// VERIFY IMAGE VERY IMPORTANT TODO
+// We are changing to formidable and using local storage before uploading it to the S3 bucket. ****
+
 export const uploadUserProfileImage = multer({
   limits: {
-    fileSize: 1024 * 1024 * 5
+    fileSize: 1024 * 1024 * 4 
   },
   fileFilter : (req, file, cb) => {
     // Allowed ext
@@ -55,7 +57,7 @@ export const uploadUserProfileImage = multer({
     if(mimetype && extname){
       return cb(null, true);
     } else {
-      return cb(null, false);
+      return cb(null, { message: 'Images Only!' });
     }
   },
   storage: multerS3({

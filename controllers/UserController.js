@@ -7,7 +7,6 @@ import { AppError } from "../utils/errorHandler.js";
 import bcrypt from 'bcryptjs';
 import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
-import { userControllerValidateEmail } from "../utils/userUtils.js";
 
 // Verify Email, generate code and send it to user
 export const verifyEmail = [
@@ -219,26 +218,37 @@ export const updateBio = [
         }
 
         res.status(200).json({status: 'success', message: "User's bio updated"});
+    }
+]
 
+export const updateGender = [
+    body('gender')
+        .matches(/^(male|female|other)$/)
+        .withMessage('Gender should be male or female')
+        .bail()
+        .escape(),
+    async (req, res, next) => {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            const errorsArray = errors.array();
+            return next(new AppError(400, errorsArray));
+        }
+
+        try {
+            await UserService.updateGender(req.user._id, req.body.gender);
+        } catch(err) {
+            return next(new AppError(500, err));
+        }
+
+        res.status(200).json({ status: 'success', message:"User's gender updated"});
     }
 ]
 
 export const addProfilePicture = [
-    (req,res,next) => {
-        // Verify the image 
-        console.log(req?.files);
-        
-        if (!req.files.profilePicture) {
-          return next(new AppError(400, 'No image uploaded'));
-        }
-
-        //  Check if user has a profile picture
-
-      return next();
-    },
     uploadUserProfileImage.fields([{ name: 'profilePicture', maxCount: 1 }]),
     async(req, res, next) => {
-        // Update links to profile images
+
         const profilePicturesKeys = Object.keys(req.files.profilePicture);
 
         // Check if there are any profile pictures uploaded
@@ -256,6 +266,23 @@ export const addProfilePicture = [
         return res.status(200).json({status: 'success', message: 'User profile updated'});
     }
 ]
+
+export const onboardStepUp = async(req,res,next) => {
+    const onboardStep = req.user.onboardStep;
+
+    if (onboardStep == 2) {
+        return next(new AppError(400, 'User already onboarded'));
+    }
+
+    try {
+        await UserService.onboardStepUp(req.user._id, onboardStep + 1);
+    } catch(err) {
+        return next(new AppError(500, err));
+    }
+
+    return res.status(200).json({status: 'success', message: 'User onboard step updated'});
+
+}
 
 // Nothing wrong with auth, just the erros are not being handled properly
 export const loginUser = [

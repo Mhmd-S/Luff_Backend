@@ -30,6 +30,15 @@ export const updateDOB = async(userId, newDOB) => {
     return result;
 }
 
+export const updateGender = async(userId, newGender) => {
+    const result = await User.findByIdAndUpdate(userId, { gender: newGender }).exec();
+    return result;
+}
+
+export const onboardStepUp = async(userId, step) => {
+    const result = await User.findByIdAndUpdate(userId, { onboardStep: step }).exec();
+}
+
 export const addProfilePicture = async(userId, profilePictures) => {
     const result = await User.findByIdAndUpdate(userId, { profilePictures: { $push: profilePictures } }).exec();
     return result;
