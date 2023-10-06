@@ -21,7 +21,7 @@ router.put('/update-name', checkAuth, validationMiddleware.nameValidation, UserC
 
 router.put('/update-dob', checkAuth, validationMiddleware.dobValidation, UserControllers.updateDOB);
 
-router.put('/upadate-bio', checkAuth, validationMiddleware.bioValidation, UserControllers.updateBio);
+router.put('/update-bio', checkAuth, validationMiddleware.bioValidation, UserControllers.updateBio);
 
 router.put('/update-gender', checkAuth, validationMiddleware.genderValidation, UserControllers.updateGender);
 
