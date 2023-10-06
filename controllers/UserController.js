@@ -8,27 +8,10 @@ import bcrypt from 'bcryptjs';
 import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
 
+
+
 // Verify Email, generate code and send it to user
-export const verifyEmail = [
-    body('email')
-        .matches(/^TP[0-9]{6}@mail.apu.edu.my$/)
-        .withMessage('Invalid email address'),
-    async(req,res,next) => {
-        
-        // Check for validation errors
-        const errors = validationResult(req);
-
-        // If there are errors, send to error handler
-        if (!errors.isEmpty()) {
-            return next(new AppError(400, errors.array()[0]));
-        }
-        
-        // Check if email is already registered. If registered, send to error handler
-        const isEmailRegistered = await UserService.checkEmailRegistered(req.body.email);
-        if (isEmailRegistered) {
-            return next(new AppError(400, 'Email already registered'));
-        }
-
+export const verifyEmail = async(req,res,next) => {
         // Check if a code is registered to the email. If in database less than 5 minutes, reject the request.
         const emailResult = await EmailService.checkEmail(req.body.email);
         if (emailResult) {
@@ -72,28 +55,12 @@ export const verifyEmail = [
         // Return success message
         res.status(200).json({status: 'success', message: 'Email sent'});
     }
-]
+
 // Change it to 6 digit code
 // We are going for react native so we need to make it as simple as possible
 
 // Check if code is correct
-export const checkRegistrationCode =[
-    body('email')
-    .matches(/^TP[0-9]{6}@mail.apu.edu.my$/)
-    .withMessage('Invalid TP email address')
-    .bail(),
-    body('code')
-    .isUUID(4)
-    .withMessage('Invalid code'),
-    async(req, res, next) => {
-        // Check for validation errors
-        const errors = validationResult(req);
-
-        // If there are errors, return them
-        if (!errors.isEmpty()) {
-          return next(new AppError(400, errors.array()[0]));
-        }
-
+export const checkRegistrationCode = async(req, res, next) => {
         // Check if email exists in databse and code is correct
         const emailResult = await EmailService.checkEmail(req.body.email);
         if (emailResult) {
@@ -107,32 +74,10 @@ export const checkRegistrationCode =[
 
         return res.status(200).json({status: 'success', message: 'Code is incorrect'});
     }
-]
+
 
 // Register user. Create a user with the main fields. Email, Name, Password and DOB.
-export const registerUser = [
-    body('email')
-        .matches(/TP[0-9]{6}@mail.apu.edu.my/)
-        .withMessage('Invalid email address')
-        .escape(),
-    body('password')
-        .isLength({min: 8, max: 15})
-        .withMessage('Password is required, minimum 8 characters, maximum 15 characters.')
-        .bail()
-        .escape(),
-    async(req, res, next) => {
-        const errors = validationResult(req);
-
-        if (!errors.isEmpty()) {
-          return next(new AppError(400, errors.array()));
-        }
-
-        // Check if email is already registered. If registered, reject the request.
-        const isEmailRegistered = await UserService.checkEmailRegistered(req.body.email);
-        if (isEmailRegistered) {
-          return next(new AppError(400, 'Email already registered'));
-        }
-
+export const registerUser = async(req, res, next) => {
         // Hash the user's password
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -149,42 +94,18 @@ export const registerUser = [
 
         return res.status(200).json({status: 'success', message: 'User created'});
     }
-]
 
-export const updateName = [
-    body('name')
-        .isLength({min: 2, max: 50})
-        .withMessage('First name is required, minimum 2 characters, maximum 50 characters.')
-        .bail()
-        .escape(),
-    async (req, res, next) => {
-        const errors = validationResult(req);
 
-        if (!errors.isEmpty()) {
-            return next(new AppError(400, errors.array()));
-        }
-
-        try {
-            await UserService.updateName(req.user._id, req.body.name);
-        } catch(err) {
-            return next(new AppError(500, err));
-        }
-
-        res.status(200).json({status: 'success', message: "User's name updated"});
+export const updateName = async (req, res, next) => {
+    try {
+        await UserService.updateName(req.user._id, req.body.name);
+    } catch(err) {
+        return next(new AppError(500, err));
     }
-]
-export const updateDOB = [ 
-    body('dob')
-        .isDate()
-        .withMessage('Invalid date of birth')
-        .bail(),
-    async (req, res, next) => {
-        const errors = validationResult(req);
+    res.status(200).json({status: 'success', message: "User's name updated"});
+}
 
-        if (!errors.isEmpty()) {
-            return next(new AppError(400, errors.array()));
-        }
-
+export const updateDOB = async (req, res, next) => {
         try {
             await UserService.updateDOB(req.user._id, req.body.dob);
         } catch(err) {
@@ -192,25 +113,10 @@ export const updateDOB = [
         }
 
         res.status(200).json({status: 'success', message: "User's date of birth updated"});
-
     }
-]
 
-export const updateBio = [
-    body('bio')
-        .isLength({min: 25, max: 500})
-        .withMessage('Bio is required, minimum 25 and maximum 500 characters.')
-        .bail()
-        .escape(),
-    async (req, res, next) => {
-        const errors = validationResult(req);
 
-        if (!errors.isEmpty()) {
-            const errorsArray = errors.array();
-            console.log(errorsArray);
-            return next(new AppError(400, errorsArray));
-        }
-
+export const updateBio = async (req, res, next) => {
         try {
             await UserService.updateBio(req.user._id, req.body.bio);
         } catch(err) {
@@ -219,15 +125,9 @@ export const updateBio = [
 
         res.status(200).json({status: 'success', message: "User's bio updated"});
     }
-]
 
-export const updateGender = [
-    body('gender')
-        .matches(/^(male|female|other)$/)
-        .withMessage('Gender should be male or female')
-        .bail()
-        .escape(),
-    async (req, res, next) => {
+
+export const updateGender = async (req, res, next) => {
         const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
@@ -243,7 +143,7 @@ export const updateGender = [
 
         res.status(200).json({ status: 'success', message:"User's gender updated"});
     }
-]
+
 
 export const addProfilePicture = [
     uploadUserProfileImage.fields([{ name: 'profilePicture', maxCount: 1 }]),
@@ -267,7 +167,7 @@ export const addProfilePicture = [
     }
 ]
 
-export const onboardStepUp = async(req,res,next) => {
+export const onboardNext = async(req,res,next) => {
     const onboardStep = req.user.onboardStep;
 
     if (onboardStep == 2) {
@@ -285,47 +185,36 @@ export const onboardStepUp = async(req,res,next) => {
 }
 
 // Nothing wrong with auth, just the erros are not being handled properly
-export const loginUser = [
-    body('email')
-        .matches(/TP[0-9]{6}@mail.apu.edu.my/)
-        .withMessage('Invalid email address')
-        .escape(),
-    body('password')
-        .isLength({min: 8, max: 15})
-        .withMessage('Invalid password')
-        .bail()
-        .escape(),
-    (req, res, next) => {
-        const errors = validationResult(req);
-  
-        if (!errors.isEmpty()) {
-            return next(new AppError(400, errors.array()));
+export const loginUser = (req, res, next) => {
+    passport.authenticate('user-local', (err, user, info) => {
+        if (err) {
+            throw new AppError(500, "Couldn't proccess your request. Try again later.");
+        }
+    
+        if (!user) {
+            console.log(info)
+            return next(new AppError(401, info.message));
+        }
+    
+        req.login(user, (err) => {
+          if (err) {
+            return next(new AppError(500, err));
           }
+      
+          return res.json({ status: "success", message:"Login successfull" ,data: user });
+    });
+    })(req, res, () => {
+      // Empty callback to prevent further execution of middleware
+      return;
+    });
+}
 
-        passport.authenticate('user-local', (err, user, info) => {
-            if (err) {
-                throw new AppError(500, "Couldn't proccess your request. Try again later.");
-            }
-        
-            if (!user) {
-                console.log(info)
-                return next(new AppError(401, info.message));
-            }
-        
-            req.login(user, (err) => {
-              if (err) {
-                return next(new AppError(500, err));
-              }
-          
-              return res.json({ status: "success", message:"Login succesfull" ,data: user });
-        });
-      })(req, res, () => {
-        // Empty callback to prevent further execution of middleware
-        return;
-      });
-
-    }
-];
+export const logoutUser = (req,res,next) => {
+    req.logout((err) => {
+        if (err) { return next(err); }
+        res.json({ status: "success", message:'Logout successfull' })
+    });
+}
 
 export const checkAuth = (req, res, next) => {
     if (req.isAuthenticated()) {
