@@ -7,6 +7,8 @@ let router = express.Router();
 
 router.get('/check-auth', UserControllers.checkAuth);
 
+router.get('/reset-password-request', UserControllers.resetPassword);
+
 router.post('/verify-email', validationMiddleware.verifyEmailValidation, UserControllers.verifyEmail);
 
 router.post('/verify-code', validationMiddleware.verifyCodeValidation, UserControllers.checkRegistrationCode);
@@ -30,6 +32,9 @@ router.put('/update-orientation', checkAuth, validationMiddleware.genderValidati
 router.put('/onboard-next', checkAuth, UserControllers.onboardNext);
 
 router.put('/add-profile-pic', checkAuth, UserControllers.addProfilePicture);
+
+// Was the route for reseting password when use is logged inx   
+// router.put('/reset-password', validationMiddleware.resetPasswordValidation, UserControllers.resetPassword);
 
 // router.delete('/delete-image', checkAuth, UserControllers.delete);
 

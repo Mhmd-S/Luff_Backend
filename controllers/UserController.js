@@ -1,4 +1,3 @@
-import { body, validationResult } from "express-validator";
 import * as EmailService from '../services/EmailService.js';
 import * as UserService from '../services/UserService.js';
 import nodemailer from 'nodemailer';
@@ -7,8 +6,6 @@ import { AppError } from "../utils/errorHandler.js";
 import bcrypt from 'bcryptjs';
 import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
-
-
 
 // Verify Email, generate code and send it to user
 export const verifyEmail = async(req,res,next) => {
@@ -56,9 +53,6 @@ export const verifyEmail = async(req,res,next) => {
         res.status(200).json({status: 'success', message: 'Email sent'});
     }
 
-// Change it to 6 digit code
-// We are going for react native so we need to make it as simple as possible
-
 // Check if code is correct
 export const checkRegistrationCode = async(req, res, next) => {
     // Check if email exists in databse and code is correct
@@ -73,7 +67,6 @@ export const checkRegistrationCode = async(req, res, next) => {
     }
     return res.status(200).json({status: 'success', message: 'Code is incorrect'});
 }
-
 
 // Register user. Create a user with the main fields. Email, Name, Password and DOB.
 export const registerUser = async(req, res, next) => {
@@ -204,6 +197,65 @@ export const loginUser = (req, res, next) => {
       // Empty callback to prevent further execution of middleware
       return;
     });
+}
+
+export const resetPasswordRequest = async(req, res, next) => {
+
+    // Check if email exists in databse and code is correct
+    const emailResult = await EmailService.checkEmail(req.body.email);
+    if (!emailResult) {
+        return next(new AppError(400, 'Email not registered'));
+    }
+
+    const resetToken = Crypto.randomBytes(32).toString('hex');
+    const hashedToken = Crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    try {
+        await UserService.resetPasswordRequest(req.body.email, hashedToken);
+    } catch (err) {
+        return next(new AppError(500, err));
+    }
+
+    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`;
+
+    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+
+    try {
+        await sendEmail({
+          email: req.body.email,
+          subject: 'Your password reset token (valid for 10 min)',
+          message,
+        });
+    } catch (err) {
+        return next(new AppError(500, err));
+    }
+
+    return res.status(200).json({status: 'success', message: 'Token sent to email'});
+}
+
+export const resetPassword = async(req, res, next) => {
+    // Verify the token and reset the password
+    const hashedToken = Crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+    const emailResult = await EmailService.checkEmail(req.body.email);
+
+    if (!emailResult) {
+        return next(new AppError(400, 'Email not registered'));
+    }
+
+    if (emailResult.token !== hashedToken) {
+        return next(new AppError(400, 'Token is invalid or has expired'));
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+    try {
+        await UserService.resetPassword(req.body.email, hashedPassword);
+    } catch (err) {
+        return next(new AppError(500, err));
+    }
+
+    return res.status(200).json({status: 'success', message: 'Password updated'});
 }
 
 export const logoutUser = (req,res,next) => {

@@ -1,6 +1,7 @@
 import { body, check, validationResult } from 'express-validator';
 import * as UserService from '../../services/UserService.js';
 import { checkError } from '../utils.js';
+import { verifyPassword } from '../utils.js';
 
 const validationMiddleware = {
   nameValidation: [
@@ -25,8 +26,8 @@ const validationMiddleware = {
         }
     ),
     body('password')
-      .isLength({ min: 8, max: 15 })
-      .withMessage('Password is required, minimum 8 characters, maximum 15 characters.')
+      .isLength({ min: 8, max: 25 })
+      .withMessage('Password is required, minimum 8 characters, maximum 25 characters.')
       .escape(),
     checkError
   ],
@@ -37,8 +38,8 @@ const validationMiddleware = {
       .withMessage('Invalid email address')
       .escape(),
     body('password')
-      .isLength({ min: 8, max: 15 })
-      .withMessage('Password is required, minimum 8 characters, maximum 15 characters.')
+      .isLength({ min: 8, max: 25 })
+      .withMessage('Password is required, minimum 8 characters, maximum 25 characters.')
       .escape(),
     checkError
   ],
@@ -82,6 +83,18 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
+
+  resetPasswordValidation: [
+    body('oldPassword')
+      .custom(async(value) => {
+        await verifyPassword(value);
+      })
+    .body('newPassword')
+      .isLength({ min: 8, max: 25 })
+      .withMessage('Password is required, minimum 8 characters, maximum 25 characters.')
+      .escape(),
+    checkError
+  ]
 
   // Add other validations here
 };

@@ -1,9 +1,10 @@
 import User from "../models/User"; 
+import ResetToken from "../models/ResetToken";
 import { deleteObjectFromBucket } from '../utils/AWS-Client';
 
 export const checkEmailRegistered = async(email) => {
     const result = await User.findOne({ email: email }).exec();
-    console.log(result);
+
     if (result) {
         return true;
     }
@@ -52,5 +53,21 @@ export const addProfilePicture = async(userId, profilePictures) => {
 
 export const deleteProfilePicture = async(userId, imageURL) => {
     const result = await User.findByIdAndUpdate(userId, { profilePictures: { $pull: imageURL } }).exec();
+    return result;
+}
+
+export const resetPasswordRequest = async(userId, token) => {
+    const token = new ResetToken({
+        userId: userId,
+        token: token,
+    });
+
+    await token.save();
+}
+
+// Remove token from database
+export const resetPassword = async(userId, newPassword) => {
+    const result = await User.findByIdAndUpdate(userId, { password: newPassword }).exec();
+
     return result;
 }
