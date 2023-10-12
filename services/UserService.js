@@ -6,7 +6,7 @@ export const checkEmailRegistered = async(email) => {
     const result = await User.findOne({ email: email }).exec();
 
     if (result) {
-        return true;
+        return result._id;
     }
     return false;
 }
@@ -56,18 +56,28 @@ export const deleteProfilePicture = async(userId, imageURL) => {
     return result;
 }
 
-export const resetPasswordRequest = async(userId, token) => {
+export const resetPasswordRequest = async(userId, hashedToken) => {
     const token = new ResetToken({
         userId: userId,
-        token: token,
+        token: hashedToken,
     });
 
     await token.save();
 }
 
-// Remove token from database
-export const resetPassword = async(userId, newPassword) => {
-    const result = await User.findByIdAndUpdate(userId, { password: newPassword }).exec();
+export const getResetToken = async(userId) => {
+    const result = await ResetToken.findOne({ userId: userId  }).exec();
+    return result;
+}
 
+export const deleteResetToken = async(userId) => {
+    const result = await ResetToken.findOneAndDelete({ userId: userId }).exec();
+    return result;
+}
+
+// Remove token from database
+export const resetPassword = async(token, newPassword) => {
+    const tokenInfo = ResetToken.findOne({ token: token }).exec();
+    const result = await User.findByIdAndUpdate(tokenInfo.userID, { password: newPassword }).exec();
     return result;
 }

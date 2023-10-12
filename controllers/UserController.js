@@ -6,11 +6,12 @@ import { AppError } from "../utils/errorHandler.js";
 import bcrypt from 'bcryptjs';
 import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
+import Crypto from 'crypto';
 
 // Verify Email, generate code and send it to user
 export const verifyEmail = async(req,res,next) => {
         // Check if a code is registered to the email. If in database less than 5 minutes, reject the request.
-        const emailResult = await EmailService.checkEmail(req.body.email);
+        const emailResult = await EmailService.checkEmailHaveCode(req.body.email);
         if (emailResult) {
             return next(new AppError(400, 'Code already sent. Wait for 5 minutes to request new code.'));
         }
@@ -199,32 +200,50 @@ export const loginUser = (req, res, next) => {
     });
 }
 
-export const resetPasswordRequest = async(req, res, next) => {
+export const requestResetPassword = async(req, res, next) => {
 
     // Check if email exists in databse and code is correct
-    const emailResult = await EmailService.checkEmail(req.body.email);
-    if (!emailResult) {
-        return next(new AppError(400, 'Email not registered'));
-    }
-
-    const resetToken = Crypto.randomBytes(32).toString('hex');
-    const hashedToken = Crypto.createHash('sha256').update(resetToken).digest('hex');
-
     try {
-        await UserService.resetPasswordRequest(req.body.email, hashedToken);
-    } catch (err) {
-        return next(new AppError(500, err));
-    }
+        const emailResult = await UserService.checkEmailRegistered(req.body.email);
 
-    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`;
+        if (!emailResult) {
+            return next(new AppError(400, 'Email not registered'));
+        }
 
-    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+        // Delete any existing reset tokens
+        await UserService.deleteResetToken(emailResult);
+    
+        // Generate token
+        const resetToken = Crypto.randomBytes(32).toString('hex');
+        const hash = await bcrypt.hash(resetToken, 15);
+        
+        // Save token to database
+        await UserService.resetPasswordRequest(emailResult, hash);
+    
+        const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: http://127.0.0.1:5173/reset-password?token=${hash}&id=${emailResult} \nIf you didn't forget your password, please ignore this email!`;
+        
+        // Send email to user
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_ADDRESS,
+                pass: process.env.EMAIL_PASSWORD,
+            },
+        });
+        
+        // Email transporter configuration
+        const mailOptions = {
+            from: process.env.EMAIL_ADDRESS,
+            to: req.body.email,
+            subject: 'Reset Password',
+            text: message,
+        };
 
-    try {
-        await sendEmail({
-          email: req.body.email,
-          subject: 'Your password reset token (valid for 10 min)',
-          message,
+        // Send email
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                return next(new AppError(500, 'Failed to send email'));
+            } 
         });
     } catch (err) {
         return next(new AppError(500, err));
@@ -234,23 +253,31 @@ export const resetPasswordRequest = async(req, res, next) => {
 }
 
 export const resetPassword = async(req, res, next) => {
-    // Verify the token and reset the password
-    const hashedToken = Crypto.createHash('sha256').update(req.params.token).digest('hex');
+    // Verify Token using user's id and token
 
-    const emailResult = await EmailService.checkEmail(req.body.email);
+        // Get token using user's id
+        const passwordResetToken = await UserService.getResetToken(req.query.id)
 
-    if (!emailResult) {
-        return next(new AppError(400, 'Email not registered'));
-    }
+        if (!passwordResetToken?.token) {
+            return next(new AppError(400, 'Token is invalid or has expired'));
+        }
 
-    if (emailResult.token !== hashedToken) {
-        return next(new AppError(400, 'Token is invalid or has expired'));
-    }
+        // Verify token
+        const isValid = await bcrypt.compare(req.query.token, passwordResetToken.token);
 
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        if (!isValid) {
+            console.log(123)
+            return next(new AppError(400, 'Token is invalid or has expired'));
+        }
 
-    try {
-        await UserService.resetPassword(req.body.email, hashedPassword);
+        // Reset password
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    
+    try{
+        await UserService.resetPassword(req.query.token, hashedPassword);
+
+        await UserService.deleteResetToken(req.query.id);
+
     } catch (err) {
         return next(new AppError(500, err));
     }

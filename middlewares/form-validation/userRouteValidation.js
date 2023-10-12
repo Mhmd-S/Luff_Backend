@@ -44,7 +44,7 @@ const validationMiddleware = {
     checkError
   ],
 
-  verifyEmailValidation: [
+  emailValidation: [
     body('email')
       .matches(/TP[0-9]{6}@mail.apu.edu.my/)
       .withMessage('Invalid email address')
@@ -52,7 +52,7 @@ const validationMiddleware = {
     checkError
   ],
 
-  verifyCodeValidation: [
+  codeValidation: [
     body('code')
       .isLength({ min: 6, max: 6 })
       .withMessage('Invalid code')
@@ -85,11 +85,7 @@ const validationMiddleware = {
   ],
 
   resetPasswordValidation: [
-    body('oldPassword')
-      .custom(async(value) => {
-        await verifyPassword(value);
-      })
-    .body('newPassword')
+    body('password')
       .isLength({ min: 8, max: 25 })
       .withMessage('Password is required, minimum 8 characters, maximum 25 characters.')
       .escape(),

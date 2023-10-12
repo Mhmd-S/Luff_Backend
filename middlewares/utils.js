@@ -1,7 +1,7 @@
 import { AppError } from "../utils/errorHandler.js";
 import { validationResult } from 'express-validator';
 import bcrypt from  'bcryptjs';
-import User from '../../models/User.js';
+import User from '../models/User.js';
 
 export const checkError = (req, res, next) => {
   const errors = validationResult(req);

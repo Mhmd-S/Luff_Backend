@@ -1,4 +1,5 @@
 import Email from "../models/Email.js";
+import User from "../models/User.js";
 
 export const saveEmailandCode = (email, code) => {
     const newEmail = new Email({
@@ -8,7 +9,7 @@ export const saveEmailandCode = (email, code) => {
     newEmail.save();
 }
 
-export const checkEmail = async(email) => {
+export const checkEmailHaveCode = async(email) => {
     const emailResult = await Email.findOne({ email: email }).exec();
     if (emailResult) {
         return emailResult;
@@ -22,10 +23,3 @@ export const deleteEmailandCode = async(email) => {
     return result;
 }
 
-export const checkEmailRegistered = async(email) => {
-    const result = await User.findOne({ email: email }).exec();
-    if (result) {
-        return true;
-    }
-    return false;
-}

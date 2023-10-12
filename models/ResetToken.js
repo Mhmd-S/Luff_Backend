@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 
+const Schema = mongoose.Schema;
+
 const ResetTokenSchema = new Schema({
     userId: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: "user",
+      ref: 'User'
     },
     token: {
       type: String,

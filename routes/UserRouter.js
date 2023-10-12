@@ -7,11 +7,15 @@ let router = express.Router();
 
 router.get('/check-auth', UserControllers.checkAuth);
 
-router.get('/reset-password-request', UserControllers.resetPassword);
+router.post('/request-reset-password', validationMiddleware.emailValidation, UserControllers.requestResetPassword);
 
-router.post('/verify-email', validationMiddleware.verifyEmailValidation, UserControllers.verifyEmail);
+// router.post('/verify-reset-token', UserControllers.verifyResetToken);
 
-router.post('/verify-code', validationMiddleware.verifyCodeValidation, UserControllers.checkRegistrationCode);
+router.post('/reset-password', validationMiddleware.resetPasswordValidation, UserControllers.resetPassword);
+
+router.post('/verify-email', validationMiddleware.emailValidation, UserControllers.verifyEmail);
+
+router.post('/verify-code', validationMiddleware.codeValidation, UserControllers.checkRegistrationCode);
 
 router.post('/register', validationMiddleware.registerUserValidation ,UserControllers.registerUser);
 
