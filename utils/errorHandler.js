@@ -11,12 +11,12 @@ AppError.prototype.constructor = AppError;
 export const errorHandlers = {
   handleError(err, res) {
     // Default to a 500 Internal Server Error if no specific status is provided
-    const status = err?.statusCode || 500;
+    const status = err?.type || 500;
 
     // Customize the error response format
     const response = {
       status: "fail",
-      message: err.message || "Internal Server Error",
+      message: err.detail || "Internal Server Error",
     };
 
     // Log the error for debugging purposes

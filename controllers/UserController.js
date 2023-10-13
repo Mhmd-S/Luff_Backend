@@ -220,7 +220,7 @@ export const requestResetPassword = async(req, res, next) => {
         // Save token to database
         await UserService.resetPasswordRequest(emailResult, hash);
     
-        const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: http://127.0.0.1:5173/reset-password?token=${hash}&id=${emailResult} \nIf you didn't forget your password, please ignore this email!`;
+        const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: http://127.0.0.1:5173/reset-password?token=${resetToken}&id=${emailResult} \nIf you didn't forget your password, please ignore this email!`;
         
         // Send email to user
         const transporter = nodemailer.createTransport({
@@ -254,30 +254,39 @@ export const requestResetPassword = async(req, res, next) => {
 
 export const resetPassword = async(req, res, next) => {
     // Verify Token using user's id and token
+    const hashedToken = req.query.token;
+    const userId = req.query.id;
 
-        // Get token using user's id
-        const passwordResetToken = await UserService.getResetToken(req.query.id)
+    if (!hashedToken || !userId) {
+        return next(new AppError(400, 'Reset token is invalid or has expired'));
+    }
 
-        if (!passwordResetToken?.token) {
-            return next(new AppError(400, 'Token is invalid or has expired'));
-        }
+    let passwordResetToken;
+    // Get token using user's id
+    try {
+        passwordResetToken = await UserService.getResetToken(userId)
+    } catch (err) {
+        return next(new AppError(500, err));
+    }
 
-        // Verify token
-        const isValid = await bcrypt.compare(req.query.token, passwordResetToken.token);
+    if (!passwordResetToken?.token) {
+       return next(new AppError(400, 'Reset token is invalid or has expired'));
+    }
+    
+    // Verify token
+    const isValid = await bcrypt.compare(hashedToken, passwordResetToken.token);
 
-        if (!isValid) {
-            console.log(123)
-            return next(new AppError(400, 'Token is invalid or has expired'));
-        }
-
-        // Reset password
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    if (!isValid) {
+        return next(new AppError(400, 'Reset token is invalid or has expired'));
+    }
+    
+    // Reset password
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
     
     try{
-        await UserService.resetPassword(req.query.token, hashedPassword);
+        await UserService.resetPassword(userId, hashedPassword);
 
-        await UserService.deleteResetToken(req.query.id);
-
+        await UserService.deleteResetToken(userId);
     } catch (err) {
         return next(new AppError(500, err));
     }

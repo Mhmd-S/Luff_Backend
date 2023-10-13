@@ -51,7 +51,7 @@ app.use((err,req,res,next) => {
         errorHandlers.handleDbValidationError(err,res);
     }else if ( err instanceof mongoose.Error.CastError) {
         errorHandlers.handleDbError(err,res);
-    }else if ( err.type === 400 ) {
+    }else if (Array.isArray(err.detail)) {
         errorHandlers.handleFormError(err,res);
     } else {
         errorHandlers.handleError(err,res);

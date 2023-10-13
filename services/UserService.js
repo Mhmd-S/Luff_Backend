@@ -41,6 +41,12 @@ export const updateOrientation = async(userId, newOrientation) => {
     return result;
 }
 
+// Remove token from database
+export const resetPassword = async(userId, newPassword) => {
+    const result = await User.findByIdAndUpdate(userId, { password: newPassword }).exec();
+    return result;
+}
+
 export const onboardStepUp = async(userId, step) => {
     const result = await User.findByIdAndUpdate(userId, { onboardStep: step }).exec();
     return result;
@@ -66,7 +72,7 @@ export const resetPasswordRequest = async(userId, hashedToken) => {
 }
 
 export const getResetToken = async(userId) => {
-    const result = await ResetToken.findOne({ userId: userId  }).exec();
+    const result = await ResetToken.findOne({ userId: userId }).exec();
     return result;
 }
 
@@ -75,9 +81,3 @@ export const deleteResetToken = async(userId) => {
     return result;
 }
 
-// Remove token from database
-export const resetPassword = async(token, newPassword) => {
-    const tokenInfo = ResetToken.findOne({ token: token }).exec();
-    const result = await User.findByIdAndUpdate(tokenInfo.userID, { password: newPassword }).exec();
-    return result;
-}
