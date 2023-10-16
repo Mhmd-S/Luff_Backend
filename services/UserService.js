@@ -63,8 +63,12 @@ export const addProfilePicture = async (userId, profilePictureLink, picNum) => {
     return result;
 }
 
-export const deleteProfilePicture = async(userId, imageURL) => {
-    const result = await User.findByIdAndUpdate(userId, { profilePictures: { $pull: imageURL } }).exec();
+export const deleteProfilePicture = async(userId, picNum) => {
+    const result = await User.findByIdAndUpdate(userId, { 
+        $set: { 
+            [`profilePictures.${picNum}`]: '' 
+        } 
+    }).exec();
     return result;
 }
 

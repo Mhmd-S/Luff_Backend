@@ -35,11 +35,10 @@ router.put('/update-orientation', checkAuth, validationMiddleware.genderValidati
 
 router.put('/onboard-next', checkAuth, UserControllers.onboardNext);
 
+// Add validation here
 router.put('/add-profile-pic', checkAuth, UserControllers.addProfilePicture);
 
-// Was the route for reseting password when use is logged inx   
-// router.put('/reset-password', validationMiddleware.resetPasswordValidation, UserControllers.resetPassword);
-
-// router.delete('/delete-image', checkAuth, UserControllers.delete);
+// Add validation here
+router.delete('/delete-profile-pic', checkAuth, UserControllers.deleteProfilePicture);
 
 export default router;

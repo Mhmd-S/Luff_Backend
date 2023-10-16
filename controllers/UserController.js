@@ -149,7 +149,13 @@ export const addProfilePicture = [
     uploadUserProfileImage.fields([{ name: 'profilePicture', maxCount: 1 }]),
     userRouteValidation.addProfilePictureValidation, // Used the validation here because the data if multipart and need multer to parse it
     async(req, res, next) => {
-        const profilePicturesKeys = Object.keys(req.files.profilePicture);
+
+        // Check if user has uploaded a profile picture
+        if (!req?.files?.profilePicture) {
+            return next(new AppError(400, 'No profile picture uploaded'));
+        }
+
+        const profilePicturesKeys = Object.keys(req?.files?.profilePicture);
 
         // Check if there are any profile pictures uploaded
         if (profilePicturesKeys.length > 0) {
@@ -163,6 +169,8 @@ export const addProfilePicture = [
             } catch (err) {
                 return next(new AppError(500, err));
             }
+        } else {
+            return next(new AppError(400, 'No profile picture uploaded'));
         }
 
         return res.status(200).json({status: 'success', message: 'User profile updated'});
@@ -171,7 +179,7 @@ export const addProfilePicture = [
 
 export const deleteProfilePicture = async(req, res, next) => {
     try {
-        await UserService.deleteProfilePicture(req.user._id, req.body.imageURL);
+        await UserService.deleteProfilePicture(req.user._id, req.body.picNum);
     } catch(err) {
         return next(new AppError(500, err));
     }
