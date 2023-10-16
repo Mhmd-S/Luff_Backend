@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs';
 import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
 import Crypto from 'crypto';
+import userRouteValidation from '../middlewares/form-validation/userRouteValidation.js';
 
 // Verify Email, generate code and send it to user
 export const verifyEmail = async(req,res,next) => {
@@ -57,15 +58,20 @@ export const verifyEmail = async(req,res,next) => {
 // Check if code is correct
 export const checkRegistrationCode = async(req, res, next) => {
     // Check if email exists in databse and code is correct
-    const emailResult = await EmailService.checkEmail(req.body.email);
-    if (emailResult) {
-        if (emailResult.code === req.body.code) {
-            await EmailService.deleteEmailandCode(req.body.email);
-            return res.status(200).json(200, { status: 'success', message: 'Code is correct'});
-        }
-    } else {
-        return next(new AppError(400, 'Email not registered'));
+    const emailResult = await EmailService.checkEmailHaveCode(req.body.email);
+    
+    console.log(emailResult, req.body.code);
+
+    if (!emailResult) {
+        throw new AppError(400, 'Email not registered');
     }
+    
+    if (emailResult.code === req.body.code) {
+        await EmailService.deleteEmailandCode(req.body.email);
+    } else {
+        return next(new AppError(400, 'Code is incorrect'));
+    }
+
     return res.status(200).json({status: 'success', message: 'Code is incorrect'});
 }
 
@@ -141,14 +147,19 @@ export const updateOrientation = async (req, res, next) => {
 
 export const addProfilePicture = [
     uploadUserProfileImage.fields([{ name: 'profilePicture', maxCount: 1 }]),
+    userRouteValidation.addProfilePictureValidation, // Used the validation here because the data if multipart and need multer to parse it
     async(req, res, next) => {
         const profilePicturesKeys = Object.keys(req.files.profilePicture);
+
         // Check if there are any profile pictures uploaded
         if (profilePicturesKeys.length > 0) {
+        
             const profilePictureUrl = req.files.profilePicture[profilePicturesKeys[0]].location;
+        
             // Add profile picture's link to the user's profile
             try {
-                await UserService.addProfilePicture(req.user._id, profilePictureUrl);
+                await UserService.addProfilePicture(req.user._id, profilePictureUrl, req.body.picNum);
+                console.log(profilePictureUrl);
             } catch (err) {
                 return next(new AppError(500, err));
             }
@@ -157,6 +168,16 @@ export const addProfilePicture = [
         return res.status(200).json({status: 'success', message: 'User profile updated'});
     }
 ]
+
+export const deleteProfilePicture = async(req, res, next) => {
+    try {
+        await UserService.deleteProfilePicture(req.user._id, req.body.imageURL);
+    } catch(err) {
+        return next(new AppError(500, err));
+    }
+
+    return res.status(200).json({status: 'success', message: 'User profile updated'});
+}
 
 export const onboardNext = async(req,res,next) => {
     const onboardStep = req.user.onboardStep;

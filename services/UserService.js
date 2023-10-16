@@ -52,8 +52,14 @@ export const onboardStepUp = async(userId, step) => {
     return result;
 }
 
-export const addProfilePicture = async(userId, profilePictures) => {
-    const result = await User.findByIdAndUpdate(userId, { profilePictures: { $push: profilePictures } }).exec();
+// test this
+export const addProfilePicture = async (userId, profilePictureLink, picNum) => {
+    const result = await User.findByIdAndUpdate(userId, { 
+        $set: { 
+            [`profilePictures.${picNum}`]: profilePictureLink 
+        } 
+    }).exec();
+    console.log(result);
     return result;
 }
 

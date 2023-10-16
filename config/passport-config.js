@@ -75,7 +75,7 @@ const configurePassport = () => {
         bio: user.bio,
         onboardStep: user.onboardStep,
         verified: user.verified,
-        profilePics: user.profilePics,
+        profilePicutres: user.profilePicutres,
         createdAt: user.createdAt,
       };
 

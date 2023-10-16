@@ -1,12 +1,12 @@
 import Email from "../models/Email.js";
 import User from "../models/User.js";
 
-export const saveEmailandCode = (email, code) => {
+export const saveEmailandCode = async(email, code) => {
     const newEmail = new Email({
         email: email,
         code: code
     });
-    newEmail.save();
+    await newEmail.save();
 }
 
 export const checkEmailHaveCode = async(email) => {
@@ -14,9 +14,7 @@ export const checkEmailHaveCode = async(email) => {
     if (emailResult) {
         return emailResult;
     }
-    return null;
 }
-
 
 export const deleteEmailandCode = async(email) => {
     const result = await Email.findOneAndDelete({ email: email }).exec();

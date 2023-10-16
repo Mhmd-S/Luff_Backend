@@ -54,7 +54,7 @@ const validationMiddleware = {
 
   codeValidation: [
     body('code')
-      .isLength({ min: 6, max: 6 })
+      .isUUID(4)
       .withMessage('Invalid code')
       .escape(),
     checkError
@@ -90,6 +90,14 @@ const validationMiddleware = {
       .withMessage('Password is required, minimum 8 characters, maximum 25 characters.')
       .escape(),
     checkError
+  ],
+
+  addProfilePictureValidation:[
+    body('picNum')
+      .isInt({ min: 0, max: 5 })
+      .withMessage('Invalid picture number')
+      .escape(),
+      checkError
   ]
 
   // Add other validations here
