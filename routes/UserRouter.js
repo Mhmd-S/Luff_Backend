@@ -7,6 +7,10 @@ let router = express.Router();
 
 router.get('/check-auth', UserControllers.checkAuth);
 
+router.get('/get-user', checkAuth, UserControllers.getUser);
+
+router.get('/get-self', checkAuth, UserControllers.getSelf);
+
 router.post('/request-reset-password', validationMiddleware.emailValidation, UserControllers.requestResetPassword);
 
 // router.post('/verify-reset-token', UserControllers.verifyResetToken);

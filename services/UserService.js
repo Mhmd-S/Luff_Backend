@@ -2,6 +2,19 @@ import User from "../models/User";
 import ResetToken from "../models/ResetToken";
 import { deleteObjectFromBucket } from '../utils/AWS-Client';
 
+export const getUserById = async(userId) => {
+    const result = await User.findById(userId).exec();
+    const userData = {
+        _id: result._id,
+        name: result.name,
+        dob: result.dob,
+        bio: result.bio,
+        verified: result.verified,
+        profilePictures: result.profilePictures,
+      };
+    return userData;
+}
+
 export const checkEmailRegistered = async(email) => {
     const result = await User.findOne({ email: email }).exec();
 

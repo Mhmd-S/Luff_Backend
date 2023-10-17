@@ -69,14 +69,12 @@ const configurePassport = () => {
 
       const userData = {
         _id: user._id,
-        email: user.email,
         name: user.name,
         dob: user.dob,
         bio: user.bio,
         onboardStep: user.onboardStep,
         verified: user.verified,
         profilePictures: user.profilePictures,
-        createdAt: user.createdAt,
       };
 
       if (user) {

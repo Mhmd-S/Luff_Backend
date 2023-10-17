@@ -9,6 +9,20 @@ import passport from "passport";
 import Crypto from 'crypto';
 import userRouteValidation from '../middlewares/form-validation/userRouteValidation.js';
 
+export const getUser = async(req, res, next) => {
+    const user = await UserService.getUserById(req.user._id);
+
+    if (!user) {
+        return next(new AppError(400, 'User not found'));
+    }
+
+    return res.status(200).json({status: 'success', data: user});
+}
+
+export const getSelf = async(req, res, next) => {
+    return res.status(200).json({status: 'success', data: req.user});
+}
+
 // Verify Email, generate code and send it to user
 export const verifyEmail = async(req,res,next) => {
         // Check if a code is registered to the email. If in database less than 5 minutes, reject the request.
@@ -332,7 +346,7 @@ export const logoutUser = (req,res,next) => {
 
 export const checkAuth = (req, res, next) => {
     if (req.isAuthenticated()) {
-        return res.status(200).json({ status: "success", message: 'User authenticated', data: req.user });
+        return res.status(200).json({ status: "success", message: 'User authenticated', data: true });
     }
 
     return next(new AppError(401,'User not authenticated'));
