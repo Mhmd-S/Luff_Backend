@@ -73,8 +73,6 @@ export const verifyEmail = async(req,res,next) => {
 export const checkRegistrationCode = async(req, res, next) => {
     // Check if email exists in databse and code is correct
     const emailResult = await EmailService.checkEmailHaveCode(req.body.email);
-    
-    console.log(emailResult, req.body.code);
 
     if (!emailResult) {
         throw new AppError(400, 'Email not registered');
@@ -179,7 +177,6 @@ export const addProfilePicture = [
             // Add profile picture's link to the user's profile
             try {
                 await UserService.addProfilePicture(req.user._id, profilePictureUrl, req.body.picNum);
-                console.log(profilePictureUrl);
             } catch (err) {
                 return next(new AppError(500, err));
             }
@@ -226,7 +223,6 @@ export const loginUser = (req, res, next) => {
         }
     
         if (!user) {
-            console.log(info)
             return next(new AppError(401, info.message));
         }
     

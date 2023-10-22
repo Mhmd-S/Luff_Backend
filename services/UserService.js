@@ -1,6 +1,5 @@
 import User from "../models/User"; 
 import ResetToken from "../models/ResetToken";
-import { deleteObjectFromBucket } from '../utils/AWS-Client';
 
 export const getUserById = async(userId) => {
     const result = await User.findById(userId).exec();
@@ -9,6 +8,8 @@ export const getUserById = async(userId) => {
         name: result.name,
         dob: result.dob,
         bio: result.bio,
+        gender: result.gender,
+        orientation: result.orientation,
         verified: result.verified,
         profilePictures: result.profilePictures,
       };

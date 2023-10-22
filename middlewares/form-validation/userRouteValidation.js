@@ -1,8 +1,19 @@
-import { body, check, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 import * as UserService from '../../services/UserService.js';
-import { checkError } from '../utils.js';
-import { verifyPassword } from '../utils.js';
+import { AppError } from "../../utils/errorHandler.js";
 
+// Helper function to check for errors
+const checkError = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return next(new AppError(400, errors.array()));
+  }
+
+  return next();
+}
+
+// Vailidation middlewares
 const validationMiddleware = {
   nameValidation: [
     body('name')
@@ -11,7 +22,6 @@ const validationMiddleware = {
       .escape(),
     checkError,
   ],
-
   registerUserValidation: [
     body('email')
       .matches(/TP[0-9]{6}@mail.apu.edu.my/)
@@ -31,7 +41,6 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
-
   loginUserValidation: [
     body('email')
       .matches(/TP[0-9]{6}@mail.apu.edu.my/)
@@ -43,7 +52,6 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
-
   emailValidation: [
     body('email')
       .matches(/TP[0-9]{6}@mail.apu.edu.my/)
@@ -51,7 +59,6 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
-
   codeValidation: [
     body('code')
       .isUUID(4)
@@ -59,7 +66,6 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
-
   dobValidation: [
     body('dob')
       .isDate()
@@ -67,7 +73,6 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
-
   bioValidation: [
     body('bio')
       .isLength({ min: 25, max: 500 })
@@ -75,7 +80,6 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
-
   genderValidation: [
     body('gender')
       .matches(/(male|female)/)
@@ -83,7 +87,6 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
-
   resetPasswordValidation: [
     body('password')
       .isLength({ min: 8, max: 25 })
@@ -91,7 +94,6 @@ const validationMiddleware = {
       .escape(),
     checkError
   ],
-
   addProfilePictureValidation:[
     body('picNum')
       .isInt({ min: 0, max: 5 })
@@ -99,7 +101,6 @@ const validationMiddleware = {
       .escape(),
       checkError
   ]
-
   // Add other validations here
 };
 
