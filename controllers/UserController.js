@@ -1,6 +1,5 @@
 import * as EmailService from '../services/EmailService.js';
 import * as UserService from '../services/UserService.js';
-import nodemailer from 'nodemailer';
 import { v4 as uuidv4 } from 'uuid';
 import { AppError } from "../utils/errorHandler.js";
 import bcrypt from 'bcryptjs';
@@ -8,6 +7,7 @@ import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
 import Crypto from 'crypto';
 import userRouteValidation from '../middlewares/form-validation/userRouteValidation.js';
+import { sendEmail } from '../utils/NodeMailerHandler.js';
 
 export const getUser = async(req, res, next) => {
     const user = await UserService.getUserById(req.user._id);
@@ -34,33 +34,14 @@ export const verifyEmail = async(req,res,next) => {
         // Generate code
         const code = uuidv4();
 
-        // Send email to user
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_ADDRESS,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
-        
-        // Email transporter configuration
-        const mailOptions = {
-            from: process.env.EMAIL_ADDRESS,
-            to: req.body.email,
-            subject: 'Verification Code',
-            text: `Your verification code is ${code}`,
-        };
-
-        // Send email
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                return next(new AppError(500, 'Failed to send email'));
-            } 
-        });
+        const to = req.body.email;
+        const subject = 'Verification Code';
+        const message = `Your verification code is ${code}`;
 
         // Save email to database with email and code
         try{
-            EmailService.saveEmailandCode(req.body.email, code);
+            sendEmail(to, subject, message);
+            await EmailService.saveEmailandCode(req.body.email, code);
         } catch(err) {
             return next(new AppError(500, 'Failed to process request. Please try again later'));
         }
@@ -259,31 +240,13 @@ export const requestResetPassword = async(req, res, next) => {
         // Save token to database
         await UserService.resetPasswordRequest(emailResult, hash);
     
+        
+        const to = req.body.email;
+        const subject = 'Reset Password';
         const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: http://127.0.0.1:5173/reset-password?token=${resetToken}&id=${emailResult} \nIf you didn't forget your password, please ignore this email!`;
-        
-        // Send email to user
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_ADDRESS,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
-        
-        // Email transporter configuration
-        const mailOptions = {
-            from: process.env.EMAIL_ADDRESS,
-            to: req.body.email,
-            subject: 'Reset Password',
-            text: message,
-        };
 
-        // Send email
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                return next(new AppError(500, 'Failed to send email'));
-            } 
-        });
+        const emailStatus = sendEmail(to, subject, message);
+
     } catch (err) {
         return next(new AppError(500, err));
     }
