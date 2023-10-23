@@ -31,7 +31,7 @@
             ref: "User",
             default: []
         },
-        likedProfiles: {
+        likedUsers: {
             type: [Schema.Types.ObjectId],
             ref: "User",
             default: []
@@ -48,7 +48,7 @@
                 5: "",
             }
         }, 
-        blockedProfiles: {
+        blockedUsers: {
             type: [Schema.Types.ObjectId],
             ref: "User",
             default: []
@@ -63,7 +63,7 @@
         },
         onboardStep: {
             type: Number,
-            default: 0,
+            default: 0, // 0 start onboarding, 1 email verified, 2 profile created
         }
     }, { timestamps: true })
 

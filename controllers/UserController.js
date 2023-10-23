@@ -17,6 +17,15 @@ export const getUser = async(req, res, next) => {
     return res.status(200).json({status: 'success', data: user});
 }
 
+export const getUsers = async(req,res,next) => {
+    try{
+        const result = await UserService.getUsers(10, req.user);
+        res.status(200).json({status: 'success', data: result});
+    }catch(err){
+        return next(new AppError(500, err));
+    }
+}
+
 export const getSelf = async(req, res, next) => {
     return res.status(200).json({status: 'success', data: req.user});
 }
@@ -120,7 +129,7 @@ export const onboardNext = async(req,res,next) => {
     if (onboardStep == 2) {
         return next(new AppError(400, 'User already onboarded'));
     }
-
+    // ToDo: Add validation for onboardStep
     try {
         await UserService.onboardStepUp(req.user._id, onboardStep + 1);
     } catch(err) {
@@ -133,26 +142,27 @@ export const onboardNext = async(req,res,next) => {
 
 // Nothing wrong with auth, just the erros are not being handled properly
 export const loginUser = (req, res, next) => {
-    passport.authenticate('user-local', (err, user, info) => {
-        if (err) {
-            throw new AppError(500, "Couldn't proccess your request. Try again later.");
-        }
-    
-        if (!user) {
-            return next(new AppError(401, info.message));
-        }
-    
-        req.login(user, (err) => {
-          if (err) {
-            return next(new AppError(500, err));
-          }
-      
-          return res.json({ status: "success", message:"Login successfull" ,data: user });
-    });
-    })(req, res, () => {
-      // Empty callback to prevent further execution of middleware
-      return;
-    });
+    try {
+        passport.authenticate('user-local', (err, user, info) => {
+            if (err) {
+                return next(new AppError(500, "Couldn't process your request. Try again later."));
+            }
+
+            if (!user) {
+                return next(new AppError(401, info.message));
+            }
+
+            req.login(user, (err) => {
+                if (err) {
+                    return next(new AppError(500, err));
+                }
+
+                return res.json({ status: "success", message: "Login successful", data: user });
+            });
+        })(req, res, next);
+    } catch (err) {
+        return next(new AppError(500, err));
+    }
 }
 
 export const logoutUser = (req,res,next) => {

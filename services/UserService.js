@@ -2,22 +2,27 @@ import User from "../models/User";
 import ResetToken from "../models/ResetToken";
 
 export const getUserById = async(userId) => {
-    const result = await User.findById(userId).exec();
-    const userData = {
-        _id: result._id,
-        name: result.name,
-        dob: result.dob,
-        bio: result.bio,
-        gender: result.gender,
-        orientation: result.orientation,
-        verified: result.verified,
-        profilePictures: result.profilePictures,
-      };
-    return userData;
+    const result = await User.findById(userId, "_id name dob bio gender orientation verified profilePuctures").exec();
+    return result;
 }
 
 export const getUserByEmail = async(email) => {
-    const result = await User.findOne({ email: email }).exec();
+    const result = await User.findOne({ email: email }, "_id name dob bio gender orientation verified profilePuctures").exec();
+    console.log(result);
+
+    return result;
+}
+
+// Problem Sini
+export const getUsers = async(amount, user) => {
+    const blockedUsers = user.blockedUsers;
+    const likedUsers = user.likeUsers;
+    const result = await User.find({ 
+        gender: user.orientation, 
+        orientation: user.gender, 
+        onboardStep: 2,
+        _id: { $nin: blockedUsers.concat(likedUsers, [user._id]) } 
+    }, '_id name dob gender orientation profilePictures bio').limit(amount).exec();
     return result;
 }
 

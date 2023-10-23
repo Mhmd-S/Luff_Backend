@@ -9,6 +9,8 @@ router.get('/check-auth', UserControllers.checkAuth);
 
 router.get('/get-user', checkAuth, UserControllers.getUser);
 
+router.get('/get-users', checkAuth, UserControllers.getUsers);
+
 router.get('/get-self', checkAuth, UserControllers.getSelf);
 
 router.post('/login', validationMiddleware.loginUserValidation, UserControllers.loginUser);
