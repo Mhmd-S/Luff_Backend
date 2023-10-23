@@ -17,12 +17,28 @@ export const getUserByEmail = async(email) => {
 export const getUsers = async(amount, user) => {
     const blockedUsers = user.blockedUsers;
     const likedUsers = user.likeUsers;
+    const rejectedUsers = user.rejectedUsers;
     const result = await User.find({ 
         gender: user.orientation, 
         orientation: user.gender, 
         onboardStep: 2,
-        _id: { $nin: blockedUsers.concat(likedUsers, [user._id]) } 
+        _id: { $nin: [...blockedUsers, ...rejectedUsers, ...likedUsers, user._id] } 
     }, '_id name dob gender orientation profilePictures bio').limit(amount).exec();
+    return result;
+}
+
+export const addToRejectedUsers = async(userId, rejectedUserId) => {
+    const result = await User.findByIdAndUpdate(userId, { $push: { rejectedUsers: rejectedUserId } }).exec();
+    return result;
+}
+
+export const addToLikedUsers = async(userId, likedUserId) => {
+    const result = await User.findByIdAndUpdate(userId, { $push: { likedUsers: likedUserId } }).exec();
+    return result;
+}
+
+export const addToMatches = async(userId, matchId) => {
+    const result = await User.findByIdAndUpdate(userId, { $push: { matches: matchId } }).exec();
     return result;
 }
 

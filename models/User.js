@@ -36,6 +36,11 @@
             ref: "User",
             default: []
         },
+        rejectedUsers: {
+            type: [Schema.Types.ObjectId],
+            ref: "User",
+            default: []
+        },
         profilePictures: {
             type:  Schema.Types.Map,
             of: String,

@@ -14,6 +14,7 @@ import ResetRouter from './routes/ResetRouter';
 // Import configs
 import { configureSession } from './config/session-config';
 import { configureCors } from './config/cors-config';
+import { populateUsers } from './utils/FakerHandler';
 
 const app = express();
 
@@ -45,6 +46,8 @@ app.use(passport.session());
 app.use('/registration', RegistrationRouter);
 app.use('/user', UserRouter);
 app.use('/reset', ResetRouter);
+
+// populateUsers();
 
 // Catching 404 and forwarding it to error handler
 app.use((req,res,next) => {

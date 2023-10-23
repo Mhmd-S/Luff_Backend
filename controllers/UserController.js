@@ -39,6 +39,53 @@ export const updateName = async (req, res, next) => {
     res.status(200).json({status: 'success', message: "User's name updated"});
 }
 
+export const likeUser = async(req, res, next) => {
+    try {
+
+        const user = req.user;
+
+        // Check if user is already liked
+        if (user.likedUsers.includes(req.body.likedUserId)) {
+            return next(new AppError(400, 'User already liked'));
+        }
+
+        // Check if user is already matched
+        if (user.matches.includes(req.body.likedUserId)) {
+            return next(new AppError(400, 'User already matched'));
+        }
+
+        // Check if user is already liked by the liked user
+        const likedUser = await UserService.getUserById(req.body.likedUserId);
+        if (likedUser.likedUsers.includes(req.user._id)) {
+            // Add to matches
+            await UserService.addToMatches(req.user._id, req.body.likedUserId);
+            await UserService.addToMatches(req.body.likedUserId, req.user._id);
+            res.status(200).json({status: 'success', message: "User matched"});
+        }
+
+        await UserService.addToLikedUsers(req.user._id, req.body.likedUserId);
+        res.status(200).json({status: 'success', message: "User liked"});
+    } catch(err) {
+        return next(new AppError(500, err));
+    }
+}
+
+export const rejectUser = async(req, res, next) => {
+    try {
+
+        // Check if user is already liked
+        if (req.user.rejectedUsers.includes(req.body.rejectedUserId)) {
+            return next(new AppError(400, 'User already rejected'));
+        }
+
+        await UserService.addToRejectedUsers(req.user._id, req.body.rejectedUserId);
+    } catch(err) {
+        return next(new AppError(500, err));
+    }
+
+    res.status(200).json({status: 'success', message: "User rejected"});
+}
+
 export const updateDOB = async (req, res, next) => {
     try {
         await UserService.updateDOB(req.user._id, req.body.dob);
