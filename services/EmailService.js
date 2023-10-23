@@ -9,7 +9,7 @@ export const saveEmailandCode = async(email, code) => {
     await newEmail.save();
 }
 
-export const checkEmailHaveCode = async(email) => {
+export const getEmailRegistrationRequest = async(email) => {
     const emailResult = await Email.findOne({ email: email }).exec();
     if (emailResult) {
         return emailResult;

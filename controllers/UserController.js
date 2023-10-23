@@ -1,13 +1,11 @@
-import * as EmailService from '../services/EmailService.js';
 import * as UserService from '../services/UserService.js';
-import { v4 as uuidv4 } from 'uuid';
 import { AppError } from "../utils/errorHandler.js";
-import bcrypt from 'bcryptjs';
+
 import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
-import Crypto from 'crypto';
+
 import userRouteValidation from '../middlewares/form-validation/userRouteValidation.js';
-import { sendEmail } from '../utils/NodeMailerHandler.js';
+
 
 export const getUser = async(req, res, next) => {
     const user = await UserService.getUserById(req.user._id);
@@ -21,69 +19,6 @@ export const getUser = async(req, res, next) => {
 
 export const getSelf = async(req, res, next) => {
     return res.status(200).json({status: 'success', data: req.user});
-}
-
-// Verify Email, generate code and send it to user
-export const verifyEmail = async(req,res,next) => {
-        // Check if a code is registered to the email. If in database less than 5 minutes, reject the request.
-        const emailResult = await EmailService.checkEmailHaveCode(req.body.email);
-        if (emailResult) {
-            return next(new AppError(400, 'Code already sent. Wait for 5 minutes to request new code.'));
-        }
-
-        // Generate code
-        const code = uuidv4();
-
-        const to = req.body.email;
-        const subject = 'Verification Code';
-        const message = `Your verification code is ${code}`;
-
-        // Save email to database with email and code
-        try{
-            sendEmail(to, subject, message);
-            await EmailService.saveEmailandCode(req.body.email, code);
-        } catch(err) {
-            return next(new AppError(500, 'Failed to process request. Please try again later'));
-        }
-
-        // Return success message
-        res.status(200).json({status: 'success', message: 'Email sent'});
-    }
-
-// Check if code is correct
-export const checkRegistrationCode = async(req, res, next) => {
-    // Check if email exists in databse and code is correct
-    const emailResult = await EmailService.checkEmailHaveCode(req.body.email);
-
-    if (!emailResult) {
-        throw new AppError(400, 'Email not registered');
-    }
-    
-    if (emailResult.code === req.body.code) {
-        await EmailService.deleteEmailandCode(req.body.email);
-    } else {
-        return next(new AppError(400, 'Code is incorrect'));
-    }
-
-    return res.status(200).json({status: 'success', message: 'Code is incorrect'});
-}
-
-// Register user. Create a user with the main fields. Email, Name, Password and DOB.
-export const registerUser = async(req, res, next) => {
-    // Hash the user's password
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const userObject = {
-        email: req.body.email,
-        password: hashedPassword,
-    }
-    
-    try {
-        await UserService.createUser(userObject);
-    } catch (err) {
-      return next(new AppError(500, err));
-    }
-
-    return res.status(200).json({status: 'success', message: 'User created'});
 }
 
 export const updateName = async (req, res, next) => {
@@ -218,82 +153,6 @@ export const loginUser = (req, res, next) => {
       // Empty callback to prevent further execution of middleware
       return;
     });
-}
-
-export const requestResetPassword = async(req, res, next) => {
-
-    // Check if email exists in databse and code is correct
-    try {
-        const emailResult = await UserService.checkEmailRegistered(req.body.email);
-
-        if (!emailResult) {
-            return next(new AppError(400, 'Email not registered'));
-        }
-
-        // Delete any existing reset tokens
-        await UserService.deleteResetToken(emailResult);
-    
-        // Generate token
-        const resetToken = Crypto.randomBytes(32).toString('hex');
-        const hash = await bcrypt.hash(resetToken, 15);
-        
-        // Save token to database
-        await UserService.resetPasswordRequest(emailResult, hash);
-    
-        
-        const to = req.body.email;
-        const subject = 'Reset Password';
-        const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: http://127.0.0.1:5173/reset-password?token=${resetToken}&id=${emailResult} \nIf you didn't forget your password, please ignore this email!`;
-
-        const emailStatus = sendEmail(to, subject, message);
-
-    } catch (err) {
-        return next(new AppError(500, err));
-    }
-
-    return res.status(200).json({status: 'success', message: 'Token sent to email'});
-}
-
-export const resetPassword = async(req, res, next) => {
-    // Verify Token using user's id and token
-    const hashedToken = req.query.token;
-    const userId = req.query.id;
-
-    if (!hashedToken || !userId) {
-        return next(new AppError(400, 'Reset token is invalid or has expired'));
-    }
-
-    let passwordResetToken;
-    // Get token using user's id
-    try {
-        passwordResetToken = await UserService.getResetToken(userId)
-    } catch (err) {
-        return next(new AppError(500, err));
-    }
-
-    if (!passwordResetToken?.token) {
-       return next(new AppError(400, 'Reset token is invalid or has expired'));
-    }
-    
-    // Verify token
-    const isValid = await bcrypt.compare(hashedToken, passwordResetToken.token);
-
-    if (!isValid) {
-        return next(new AppError(400, 'Reset token is invalid or has expired'));
-    }
-    
-    // Reset password
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    
-    try{
-        await UserService.resetPassword(userId, hashedPassword);
-
-        await UserService.deleteResetToken(userId);
-    } catch (err) {
-        return next(new AppError(500, err));
-    }
-
-    return res.status(200).json({status: 'success', message: 'Password updated'});
 }
 
 export const logoutUser = (req,res,next) => {

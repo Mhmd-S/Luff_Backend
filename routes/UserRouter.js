@@ -11,21 +11,9 @@ router.get('/get-user', checkAuth, UserControllers.getUser);
 
 router.get('/get-self', checkAuth, UserControllers.getSelf);
 
-router.post('/request-reset-password', validationMiddleware.emailValidation, UserControllers.requestResetPassword);
-
-// router.post('/verify-reset-token', UserControllers.verifyResetToken);
-
-router.post('/reset-password', validationMiddleware.resetPasswordValidation, UserControllers.resetPassword);
-
-router.post('/verify-email', validationMiddleware.emailValidation, UserControllers.verifyEmail);
-
-router.post('/verify-code', validationMiddleware.codeValidation, UserControllers.checkRegistrationCode);
-
-router.post('/register', validationMiddleware.registerUserValidation ,UserControllers.registerUser);
-
 router.post('/login', validationMiddleware.loginUserValidation, UserControllers.loginUser);
 
-router.post('/logout', checkAuth,UserControllers.logoutUser);
+router.post('/logout', checkAuth, UserControllers.logoutUser);
 
 router.put('/update-name', checkAuth, validationMiddleware.nameValidation, UserControllers.updateName);
 

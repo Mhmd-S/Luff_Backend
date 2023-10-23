@@ -8,6 +8,10 @@ import connectDatabase from './config/mogno-config';
 
 // Import routers
 import UserRouter from './routes/UserRouter';
+import RegistrationRouter from './routes/RegistrationRouter';
+import ResetRouter from './routes/ResetRouter';
+
+// Import configs
 import { configureSession } from './config/session-config';
 import { configureCors } from './config/cors-config';
 
@@ -38,7 +42,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routers
+app.use('/registration', RegistrationRouter);
 app.use('/user', UserRouter);
+app.use('/reset', ResetRouter);
 
 // Catching 404 and forwarding it to error handler
 app.use((req,res,next) => {

@@ -16,13 +16,9 @@ export const getUserById = async(userId) => {
     return userData;
 }
 
-export const checkEmailRegistered = async(email) => {
+export const getUserByEmail = async(email) => {
     const result = await User.findOne({ email: email }).exec();
-
-    if (result) {
-        return result._id;
-    }
-    return false;
+    return result;
 }
 
 export const createUser = async(userObject) => {
