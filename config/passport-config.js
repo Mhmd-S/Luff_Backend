@@ -25,8 +25,9 @@ const configureLocalStrategy = (userModel, strategyName) => {
           bio: user.bio,
           gender: user.gender,
           matches: user.matches,
-          blockedProfiles: user.blockedProfiles,
-          likedProfiles: user.likedProfiles,
+          blockedUsers: user.blockedUsers,
+          likedUsers: user.likedUsers,
+          rejectedUsers: user.rejectedUsers,
           orientation: user.orientation,
           onboardStep: user.onboardStep,
           verified: user.verified,
@@ -52,12 +53,33 @@ const configurePassport = () => {
     done(null, user._id);
   });
 
+  // Deserialize user function for req.user
   passport.deserializeUser(async (id, done) => {
     try {
       const user = await User.findById(id);
 
       if (user) {
-        done(null, user);
+
+        const userData = {
+          _id: user._id,
+          name: user.name,
+          dob: user.dob,
+          bio: user.bio,
+          gender: user.gender,
+          matches: user.matches,
+          orientation: user.orientation,
+          onboardStep: user.onboardStep,
+          likedUsers: user.likedUsers,
+          rejectedUsers: user.rejectedUsers,
+          blockedUsers: user.blockedUsers,
+          verified: user.verified,
+          profilePics: user.profilePics,
+          createdAt: user.createdAt,
+        };
+
+        console.log(userData);
+
+        done(null, userData);
       } else {
         done(new Error('User not found'));
       }

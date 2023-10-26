@@ -2,7 +2,7 @@ import User from "../models/User";
 import ResetToken from "../models/ResetToken";
 
 export const getUserById = async(userId) => {
-    const result = await User.findById(userId, "_id name dob bio gender orientation verified profilePuctures").exec();
+    const result = await User.findById(userId, "_id name dob bio gender orientation likedUsers verified profilePuctures").exec();
     return result;
 }
 
@@ -15,15 +15,21 @@ export const getUserByEmail = async(email) => {
 
 // Problem Sini
 export const getUsers = async(amount, user) => {
+
     const blockedUsers = user.blockedUsers;
-    const likedUsers = user.likeUsers;
+    const likedUsers = user.likedUsers;
     const rejectedUsers = user.rejectedUsers;
+
     const result = await User.find({ 
         gender: user.orientation, 
         orientation: user.gender, 
         onboardStep: 2,
-        _id: { $nin: [...blockedUsers, ...rejectedUsers, ...likedUsers, user._id] } 
-    }, '_id name dob gender orientation profilePictures bio').limit(amount).exec();
+        _id: { $nin: [...blockedUsers, ...rejectedUsers, ...likedUsers, user._id] 
+        } 
+    }, '_id name dob gender orientation profilePictures bio')
+    .limit(amount)
+    .exec();
+
     return result;
 }
 
@@ -90,7 +96,6 @@ export const addProfilePicture = async (userId, profilePictureLink, picNum) => {
             [`profilePictures.${picNum}`]: profilePictureLink 
         } 
     }).exec();
-    console.log(result);
     return result;
 }
 

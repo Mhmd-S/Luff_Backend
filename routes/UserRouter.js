@@ -32,6 +32,10 @@ router.put('/onboard-next', checkAuth, UserControllers.onboardNext);
 // Add validation here
 router.put('/add-profile-pic', checkAuth, UserControllers.addProfilePicture);
 
+router.post('/like-user', checkAuth, UserControllers.likeUser);
+
+router.post('/reject-user', checkAuth, UserControllers.rejectUser);
+
 // Add validation here
 router.delete('/delete-profile-pic', checkAuth, UserControllers.deleteProfilePicture);
 

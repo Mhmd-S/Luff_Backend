@@ -39,31 +39,44 @@ export const updateName = async (req, res, next) => {
     res.status(200).json({status: 'success', message: "User's name updated"});
 }
 
+
+// Test
 export const likeUser = async(req, res, next) => {
     try {
 
         const user = req.user;
 
+        // Fetch liked user from db
+        const likedUser = await UserService.getUserById(req.query.userId);
+
+        console.log(likedUser)
+
+        // Check if liked user exists
+        if (!likedUser) {
+            return next(new AppError(400, 'User does not exist'));
+        }
+
         // Check if user is already liked
-        if (user.likedUsers.includes(req.body.likedUserId)) {
+        if (user.likedUsers.includes(likedUser._id)) {
             return next(new AppError(400, 'User already liked'));
         }
 
         // Check if user is already matched
-        if (user.matches.includes(req.body.likedUserId)) {
+        if (user.matches.includes(likedUser._id)) {
             return next(new AppError(400, 'User already matched'));
         }
 
-        // Check if user is already liked by the liked user
-        const likedUser = await UserService.getUserById(req.body.likedUserId);
-        if (likedUser.likedUsers.includes(req.user._id)) {
+        // Check if the liked user already liked the user
+        if (likedUser.likedUsers.includes(user._id)) {
+
             // Add to matches
-            await UserService.addToMatches(req.user._id, req.body.likedUserId);
-            await UserService.addToMatches(req.body.likedUserId, req.user._id);
+            await UserService.addToMatches(user._id, likedUser._id);
+            await UserService.addToMatches(likedUser._id, user._id);
+
             res.status(200).json({status: 'success', message: "User matched"});
         }
 
-        await UserService.addToLikedUsers(req.user._id, req.body.likedUserId);
+        await UserService.addToLikedUsers(user._id, likedUser._id);
         res.status(200).json({status: 'success', message: "User liked"});
     } catch(err) {
         return next(new AppError(500, err));
@@ -72,13 +85,19 @@ export const likeUser = async(req, res, next) => {
 
 export const rejectUser = async(req, res, next) => {
     try {
+        const rejectedUser = await UserService.getUserById(req.query.userId);
+
+        // Check if rejected user exists
+        if (!rejectedUser) {
+            return next(new AppError(400, 'User does not exist'));
+        }
 
         // Check if user is already liked
-        if (req.user.rejectedUsers.includes(req.body.rejectedUserId)) {
+        if (req.user.rejectedUsers.includes(rejectedUser._id)) {
             return next(new AppError(400, 'User already rejected'));
         }
 
-        await UserService.addToRejectedUsers(req.user._id, req.body.rejectedUserId);
+        await UserService.addToRejectedUsers(req.user._id, rejectedUser._id);
     } catch(err) {
         return next(new AppError(500, err));
     }
@@ -128,7 +147,7 @@ export const updateOrientation = async (req, res, next) => {
     res.status(200).json({ status: 'success', message:"User's orientation updated"});
 }
 
-
+// Was thinking about the profile picutres schema, and regarding the white spaces
 export const addProfilePicture = [
     uploadUserProfileImage.fields([{ name: 'profilePicture', maxCount: 1 }]),
     userRouteValidation.addProfilePictureValidation, // Used the validation here because the data if multipart and need multer to parse it
@@ -221,7 +240,7 @@ export const logoutUser = (req,res,next) => {
 
 export const checkAuth = (req, res, next) => {
     if (req.isAuthenticated()) {
-        return res.status(200).json({ status: "success", message: 'User authenticated', data: true });
+        return res.status(200).json({ status: "success", message: 'User authenticated'});
     }
 
     return next(new AppError(401,'User not authenticated'));

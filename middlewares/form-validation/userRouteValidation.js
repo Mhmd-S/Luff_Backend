@@ -75,7 +75,7 @@ const validationMiddleware = {
   ],
   bioValidation: [
     body('bio')
-      .isLength({ min: 25, max: 500 })
+      .isLength({ min: 25, max: 250 })
       .withMessage('Invalid bio')
       .escape(),
     checkError
@@ -96,7 +96,7 @@ const validationMiddleware = {
   ],
   addProfilePictureValidation:[
     body('picNum')
-      .isInt({ min: 0, max: 5 })
+      .isInt({ min: 1, max: 6 })
       .withMessage('Invalid picture number')
       .escape(),
       checkError
