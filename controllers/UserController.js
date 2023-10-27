@@ -51,6 +51,11 @@ export const likeUser = async(req, res, next) => {
 
         console.log(likedUser)
 
+        // Check if gender and orientation matches
+        if (likedUser.orientation !== req.user.gender || req.user.orientation !== likedUser.gender) {
+            return next(new AppError(400, 'User does not match your preferences'));
+        }
+
         // Check if liked user exists
         if (!likedUser) {
             return next(new AppError(400, 'User does not exist'));
@@ -73,7 +78,7 @@ export const likeUser = async(req, res, next) => {
             await UserService.addToMatches(user._id, likedUser._id);
             await UserService.addToMatches(likedUser._id, user._id);
 
-            res.status(200).json({status: 'success', message: "User matched"});
+            res.status(200).json({status: 'success', message: "User matched", data: likedUser});
         }
 
         await UserService.addToLikedUsers(user._id, likedUser._id);
@@ -91,6 +96,12 @@ export const rejectUser = async(req, res, next) => {
         if (!rejectedUser) {
             return next(new AppError(400, 'User does not exist'));
         }
+
+        // Check if gender and orientation matches
+        if (rejectedUser.orientation !== req.user.gender || req.user.orientation !== rejectUser.gender) {
+            return next(new AppError(400, 'User does not match your preferences'));
+        }
+        
 
         // Check if user is already liked
         if (req.user.rejectedUsers.includes(rejectedUser._id)) {

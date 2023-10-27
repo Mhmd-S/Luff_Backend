@@ -15,6 +15,7 @@ import ResetRouter from './routes/ResetRouter';
 import { configureSession } from './config/session-config';
 import { configureCors } from './config/cors-config';
 import { populateUsers } from './utils/FakerHandler';
+import { createSocketServer } from './utils/socketio-config';
 
 const app = express();
 
@@ -67,93 +68,7 @@ app.use((err,req,res,next) => {
     }
 });
 
-// const io = new Server(httpServer, {
-//     cors: {
-//         origin: "*",
-//         credentials: true
-//     },
-//     connectionStateRecovery: {
-//         // the backup duration of the sessions and the packets
-//         maxDisconnectionDuration: 2 * 60 * 1000,
-//     },
-// });
-
-// // convert a connect middleware to a Socket.IO middleware
-// const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
-
-// io.use(wrap(sessionMiddleware));
-// io.use(wrap(passport.initialize()));
-// io.use(wrap(passport.session()));
-
-// io.use((socket, next) => {
-//     if (socket.request.user) {
-//       next();
-//     } else {
-//       next(new Error("unauthorized"));
-//     }
-//   });
-
-// // To save users and their socket IDs
-// const userSocketMap = new Map();
-
-// io.on('connection', (socket) => {
-//   const userId = socket.request.user._id.toString();
-
-//   // Store the association between user ID and socket ID in the map
-//   userSocketMap.set(userId, socket.id);
-
-//   socket.join(userId);
-
-//   socket.on('send-message', async(data) => {
-
-//     const recipientId = data.recipient._id;
-
-//     // Get the recipient's socket ID from the map
-//     const recipientSocketId = userSocketMap.get(recipientId);
-
-//     data.sender = {
-//       userId: userId,
-//       username: socket.request.user.username,
-//       profilePicture: socket.request.user.profilePicture
-//     }
-    
-//     data.timestamp = Date.now();
-
-//     // Send to the sender.
-//     socket.emit('sent-message', data);
-
-//     // Check if the recipient is online (has a socket connection)
-//     if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
-//       // Emit the message only to the intended recipient's socket
-//       // Send to the recipient.
-//       io.to(recipientSocketId).emit('receive-message', data);
-//     } 
-    
-//     // Save data to the database
-//     try{
-//       if(data.chatId === null) {
-//         const result = await ChatController.createChat([userId, data.recipient._id]);
-//         console.log(result);
-//         const chatAddMessageResult = await ChatController.putChat(userId,result._id, data.message);
-//         console.log('hellooooo')
-//         // Send the chatId back to the client
-//         socket.emit('chatId', result._id);
-//       } else {
-//         const result = await ChatController.putChat(userId, data.chatId, data.message);
-//       }
-//     } catch(err) {
-//       socket.emit('error', 'Coukd not save message to database');
-//     }
-
-//   });
-
-//   socket.on('disconnect', () => {
-//     // Remove the association when the socket disconnects
-//     userSocketMap.delete(userId);
-//   });
-// });
-
-// const io = createSocketServer(httpServer, sessionMiddleware, passport);
+createSocketServer(httpServer, sessionMiddleware, passport);
 
 httpServer.listen(process.env.PORT || 10000, ()=> {
     console.log(`Listening at at port ${process.env.PORT}`);

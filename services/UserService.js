@@ -2,12 +2,12 @@ import User from "../models/User";
 import ResetToken from "../models/ResetToken";
 
 export const getUserById = async(userId) => {
-    const result = await User.findById(userId, "_id name dob bio gender orientation likedUsers verified profilePuctures").exec();
+    const result = await User.findById(userId, "_id name dob bio gender orientation likedUsers verified profilePictures").exec();
     return result;
 }
 
 export const getUserByEmail = async(email) => {
-    const result = await User.findOne({ email: email }, "_id name dob bio gender orientation verified profilePuctures").exec();
+    const result = await User.findOne({ email: email }, "_id name dob bio gender orientation verified profilePictures").exec();
     console.log(result);
 
     return result;
