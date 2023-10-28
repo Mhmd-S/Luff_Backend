@@ -49,16 +49,14 @@ export const likeUser = async(req, res, next) => {
         // Fetch liked user from db
         const likedUser = await UserService.getUserById(req.query.userId);
 
-        console.log(likedUser)
+        // Check if liked user exists
+        if (!likedUser) {
+            return next(new AppError(400, 'User does not exist'));
+        }
 
         // Check if gender and orientation matches
         if (likedUser.orientation !== req.user.gender || req.user.orientation !== likedUser.gender) {
             return next(new AppError(400, 'User does not match your preferences'));
-        }
-
-        // Check if liked user exists
-        if (!likedUser) {
-            return next(new AppError(400, 'User does not exist'));
         }
 
         // Check if user is already liked
@@ -78,6 +76,9 @@ export const likeUser = async(req, res, next) => {
             await UserService.addToMatches(user._id, likedUser._id);
             await UserService.addToMatches(likedUser._id, user._id);
 
+            // Create a chat
+            await ChatController.createChat([user._id, likedUser._id]);
+            
             res.status(200).json({status: 'success', message: "User matched", data: likedUser});
         }
 

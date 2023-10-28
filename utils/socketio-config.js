@@ -13,15 +13,19 @@ export const createSocketServer = (httpServer, sessionMiddleware, passport) => {
 
 // Initialize the Socket.IO server with options
 const initializeSocketServer = (httpServer) => {
-    return new Server(httpServer, {
-        cors: {
-            origin: '*',
-            credentials: true,
-        },
-        connectionStateRecovery: {
-            maxDisconnectionDuration: 2 * 60 * 1000,
-        },
-    });
+    try {
+        return new Server(httpServer, {
+            cors: {
+                origin: '*',
+                credentials: true,
+            },
+            connectionStateRecovery: {
+                maxDisconnectionDuration: 2 * 60 * 1000,
+            },
+        });
+    } catch (error) {
+        console.error('Error initializing Socket.IO server:', error);
+    }
 }
 
 // Configure middleware for Socket.IO
@@ -61,6 +65,11 @@ const configureSocketEventHandlers = (io) => {
 
         socket.on('disconnect', () => {
             disassociateSocketFromUser(userSocketMap, userId);
+        });
+
+        socket.on('error', (error) => {
+            console.error('Socket error:', error);
+            socket.emit('error', 'An error occurred on the server.');
         });
     });
 }
@@ -103,12 +112,22 @@ const disassociateSocketFromUser = (userSocketMap, userId) => {
 }
 
 // Function to save the message to the database (to be implemented)
-const saveMessageToDatabase = (data) => {
+const saveMessageToDatabase = async(data) => {
     if (data.chatId === null) {
-        // Create a chat or perform other database operations
-        // ...
+        try {
+            const chatInfo = await ChatController.createChat([data.sender.userId, data.recipient._id]);
+            const chatId = chatInfo._id;
+            // Save the message to the database
+            const saveMessage = await ChatController.putChat(data.sender.userId, chatId, data.message);
+        } catch(err) {
+            console.log(err);
+        }
     } else {
-        // Update an existing chat or perform other database operations
-        // ...
+        try {
+            // Save the message to the database
+            const saveMessage = await ChatController.putChat(data.sender.userId, data.chatId, data.message);
+        } catch(err) {
+            console.log(err);
+        }
     }
 }

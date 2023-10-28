@@ -1,5 +1,5 @@
 import express from 'express';
-import checkAuth from '../authentication/checkAuth';
+import checkAuth from '../auth/checkAuth.js';
 import * as ChatController from '../controllers/ChatController';
 
 let router = express.Router();
@@ -8,8 +8,9 @@ let router = express.Router();
 router.get('/get-chat', checkAuth, ChatController.getChat);
 
 // Get One user all chats. Takes Page and User Id as query paramters.
-router.get('/user-contacts', checkAuth, ChatController.getChats);
+router.get('/get-chats', checkAuth, ChatController.getChats);
 
-
+// Update chat to seen. Takes User Id and Chat Id as query paramters.
+router.put('/update-chat-to-seen/:chatId', checkAuth, ChatController.updateChatToSeen);
 
 export default router;

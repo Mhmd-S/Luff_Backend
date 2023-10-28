@@ -8,14 +8,35 @@ export const getChat = async(req,res,next) => {
         const chatId = req.query.chatId;
         const page = req.query.page;
  
-        if (!page) next(new AppError(400, "Invalid :page parameter"));
-
-        if (page < 1) next(new AppError(400, "Invalid :page parameter"));
+        if (!page || page < 1) {
+            throw new AppError(400, "Invalid :page parameter");
+        }
 
         const chat = await ChatService.getChat(chatId, page);
 
-        res.json({ status: "success", data: chat });
+        res.status(200).json({ status: "success", data: chat });
     } catch (err) {
+        next(err);
+    }
+}
+
+export const updateChatToSeen = async(req,res,next) => {
+    try {
+        const userId = req.user._id;
+        const chatId = req.params.chatId;
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw new AppError(400, "Invalid :userId parameter");
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(chatId)) {
+            throw new AppError(400, "Invalid :chatId parameter");
+        }
+
+        const chat = await ChatService.updateChatToSeen(userId, chatId);
+
+        res.status(200).json({ status: "success", data: chat });
+    }  catch (err) {
         next(err);
     }
 }
@@ -25,17 +46,17 @@ export const getChats = async(req,res,next) => {
         const userId = req.user._id;
         const page = req.query.page;
 
-        if (!page) next(new AppError(400, "Invalid :page parameter"));
-
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            next(new AppError(400, "Invalid :userId parameter"));
+        if (!page || page < 1) {
+            throw new AppError(400, "Invalid :page parameter");
         }
 
-        if (page < 1) next(new AppError(400, "Invalid :page parameter"));
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw new AppError(400, "Invalid :userId parameter");
+        }
 
         const chats = await ChatService.getChats(userId, page);
 
-        res.json({ status: "success", data: chats });
+        res.status(200).json({ status: "success", data: chats });
     } catch (err) {
         next(err);
     }
@@ -52,13 +73,12 @@ export const createChat = async(participants) => {
         if (!Array.isArray(participants)) throw new AppError(400, "Invalid :participants parameter");
 
         if (participants.length !== 2) throw new AppError(400, "Invalid :participants parameter");
-
-        if (!mongoose.Types.ObjectId.isValid(participants[0]) || !mongoose.Types.ObjectId.isValid(participants[1])) throw new AppError(400, "Invalid :participants parameter");
         
         // check if participants are valid users
         if (!await User.exists({ _id: participants[0] }) || !await User.exists({ _id: participants[1] })) throw new AppError(404, "User not found!");
 
         const chat = await ChatService.createChat(participants);
+
         return chat;
     } catch (err) {
         console.log(err);
@@ -83,7 +103,8 @@ export const putChat = async(userId, chatId, message) => {
         const messageObj = {
             senderId: userId,
             recipientId: recipient,
-            content: message
+            content: message,
+            seenBy: [userId],
         };
 
         const charResult = await ChatService.putChat(chatId, messageObj);

@@ -16,6 +16,10 @@ const messageSchema = new Schema({
   content: {
     type: String,
     required: true,
+  },
+  seenBy: {
+    type: [Schema.Types.ObjectId],
+    ref: 'User',
   }
 }, {timestamps: true});
 

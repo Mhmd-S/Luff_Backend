@@ -2,8 +2,7 @@ import Message from '../models/Message';
 import Chat from '../models/Chat';
 
 export const getParticipants = async(chatId) => {
-    const result = await Chat.findById(chatId, 'participants')
-                                .exec();
+    const result = await Chat.findById(chatId, 'participants').exec();
     return result; 
 }
 
@@ -26,7 +25,7 @@ export const getChats = async(userID, page) => {
         .skip((page - 1) * 20)
         .limit(20)
         .populate('participants', 'username profilePicture')
-        .populate('lastMessage', 'content updatedAt')
+        .populate('lastMessage', 'content updatedAt seenBy')
         .exec();
 
     return result;
@@ -35,6 +34,11 @@ export const getChats = async(userID, page) => {
  export const createChat = async(participants) => {
     const chat = new Chat({ participants: participants });
     const result = await chat.save();
+    return result;
+}
+
+export const updateChatToSeen = async(userId, chatId) => {
+    const result = await Message.updateMany({ _id: chatId }, { $push: { seenBy: userId } }).exec();
     return result;
 }
 
