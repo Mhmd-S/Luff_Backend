@@ -16,7 +16,7 @@ const initializeSocketServer = (httpServer) => {
     try {
         return new Server(httpServer, {
             cors: {
-                origin: '*',
+                origin: 'http://127.0.0.1:5173',
                 credentials: true,
             },
             connectionStateRecovery: {
@@ -80,6 +80,22 @@ const associateSocketWithUser = (userSocketMap, userId, socket) => {
     socket.join(userId);
 }
 
+// Handle the 'notifications' event
+const handleNotifications = (io, userSocketMap, socket, userId, data) => {
+    const recipientId = data.recipient._id;
+    const recipientSocketId = userSocketMap.get(recipientId);
+
+    data.sender = {
+        userId: userId,
+        name: socket.request.user.name,
+        profilePicture: socket.request.user.profilePicture,
+    };
+
+    if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
+        io.to(recipientSocketId).emit('matched', data);
+    }
+}
+
 // Handle the 'send-message' event
 const handleSendMessage = async (io, userSocketMap, socket, userId, data) => {
     const recipientId = data.recipient._id;
@@ -87,23 +103,25 @@ const handleSendMessage = async (io, userSocketMap, socket, userId, data) => {
 
     data.sender = {
         userId: userId,
-        username: socket.request.user.username,
+        username: socket.request.user.name,
         profilePicture: socket.request.user.profilePicture,
     };
 
     data.timestamp = Date.now();
 
-    socket.emit('sent-message', data);
-
+    // Send the message to the intended recipient if they are online
     if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
         io.to(recipientSocketId).emit('receive-message', data);
     }
 
     try {
         saveMessageToDatabase(data);
+         // Refelect the message back to the sender
+        socket.emit('sent-message', data);
     } catch (err) {
         socket.emit('error', 'Could not save message to the database');
     }
+
 }
 
 // Disassociate a socket from a user in the map

@@ -19,8 +19,6 @@ import { createSocketServer } from './utils/socketio-config';
 
 const app = express();
 
-const httpServer = createServer(app);
-
 // Setting up mongo database
 async function main() {
     await connectDatabase();
@@ -67,6 +65,8 @@ app.use((err,req,res,next) => {
         errorHandlers.handleError(err,res);
     }
 });
+
+const httpServer = createServer(app);
 
 createSocketServer(httpServer, sessionMiddleware, passport);
 
