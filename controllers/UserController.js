@@ -1,9 +1,9 @@
 import * as UserService from '../services/UserService.js';
 import { AppError } from "../utils/errorHandler.js";
-
+import { emitMatch, handleMatch } from '../utils/socketio-config.js';
 import {uploadUserProfileImage } from '../utils/AWS-Client';
 import passport from "passport";
-
+import * as ChatController from './ChatController.js';
 import userRouteValidation from '../middlewares/form-validation/userRouteValidation.js';
 
 
@@ -78,8 +78,13 @@ export const likeUser = async(req, res, next) => {
 
             // Create a chat
             await ChatController.createChat([user._id, likedUser._id]);
+
+            // Send notification to both users
+            emitMatch(user._id, likedUser);
+            emitMatch(likedUser._id, user);
             
             res.status(200).json({status: 'success', message: "User matched", data: likedUser});
+            return;
         }
 
         await UserService.addToLikedUsers(user._id, likedUser._id);

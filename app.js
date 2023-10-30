@@ -10,6 +10,7 @@ import connectDatabase from './config/mogno-config';
 import UserRouter from './routes/UserRouter';
 import RegistrationRouter from './routes/RegistrationRouter';
 import ResetRouter from './routes/ResetRouter';
+import ChatRouter from './routes/ChatRouter';
 
 // Import configs
 import { configureSession } from './config/session-config';
@@ -18,6 +19,8 @@ import { populateUsers } from './utils/FakerHandler';
 import { createSocketServer } from './utils/socketio-config';
 
 const app = express();
+
+const httpServer = createServer(app);
 
 // Setting up mongo database
 async function main() {
@@ -45,6 +48,10 @@ app.use(passport.session());
 app.use('/registration', RegistrationRouter);
 app.use('/user', UserRouter);
 app.use('/reset', ResetRouter);
+app.use('/chat', ChatRouter);
+
+// IO Server setup
+createSocketServer(httpServer, sessionMiddleware, passport);
 
 // populateUsers();
 
@@ -66,9 +73,6 @@ app.use((err,req,res,next) => {
     }
 });
 
-const httpServer = createServer(app);
-
-createSocketServer(httpServer, sessionMiddleware, passport);
 
 httpServer.listen(process.env.PORT || 10000, ()=> {
     console.log(`Listening at at port ${process.env.PORT}`);

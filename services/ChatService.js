@@ -31,6 +31,19 @@ export const getChats = async(userID, page) => {
     return result;
 }
 
+export const getUndreadChatsCount = async(userId) => {
+    const result = await Chat.find({ participants: { $in: [userId] } })
+        .populate('lastMessage', 'seenBy')
+        .exec();
+    let count = 0;
+    result.forEach(chat => {
+        if (chat.lastMessage == null || !chat.lastMessage.seenBy.includes(userId)) {
+            count++;
+        }
+    });
+    return count;
+}
+
  export const createChat = async(participants) => {
     const chat = new Chat({ participants: participants });
     const result = await chat.save();

@@ -23,7 +23,7 @@ export const getChat = async(req,res,next) => {
 export const updateChatToSeen = async(req,res,next) => {
     try {
         const userId = req.user._id;
-        const chatId = req.params.chatId;
+        const chatId = req.query.chatId;
 
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             throw new AppError(400, "Invalid :userId parameter");
@@ -57,6 +57,22 @@ export const getChats = async(req,res,next) => {
         const chats = await ChatService.getChats(userId, page);
 
         res.status(200).json({ status: "success", data: chats });
+    } catch (err) {
+        next(err);
+    }
+}
+
+export const getUndreadChatsCount = async(req,res,next) => {
+    try {
+        const userId = req.user._id;
+
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw new AppError(400, "Invalid :userId parameter");
+        }
+
+        const count = await ChatService.getUndreadChatsCount(userId);
+
+        res.status(200).json({ status: "success", data: count });
     } catch (err) {
         next(err);
     }

@@ -77,8 +77,6 @@ const configurePassport = () => {
           createdAt: user.createdAt,
         };
 
-        console.log(userData);
-
         done(null, userData);
       } else {
         done(new Error('User not found'));

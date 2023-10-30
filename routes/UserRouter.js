@@ -13,7 +13,7 @@ router.get('/get-users', checkAuth, UserControllers.getUsers);
 
 router.get('/get-self', checkAuth, UserControllers.getSelf);
 
-router.post('/login', validationMiddleware.loginUserValidation, UserControllers.loginUser);
+router.post('/login', UserControllers.loginUser);
 
 router.post('/logout', checkAuth, UserControllers.logoutUser);
 
