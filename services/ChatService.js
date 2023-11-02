@@ -15,6 +15,9 @@ export const getChat = async(chatId, userId, page) => {
             limit: 50,
             skip: (page-1) * 50
         },
+    })
+    .populate({
+        path: 'lastMessage',
     }).exec();
     return result;
 }
@@ -24,7 +27,7 @@ export const getChats = async(userID, page) => {
         .sort({ updatedAt: -1 })
         .skip((page - 1) * 20)
         .limit(20)
-        .populate('participants', 'username profilePicture')
+        .populate('participants', 'name profilePictures')
         .populate('lastMessage', 'content updatedAt seenBy')
         .exec();
 

@@ -31,7 +31,7 @@ const configureLocalStrategy = (userModel, strategyName) => {
           orientation: user.orientation,
           onboardStep: user.onboardStep,
           verified: user.verified,
-          profilePics: user.profilePics,
+          profilePictures: user.profilePictures,
           createdAt: user.createdAt,
         };
         return done(null, userData);
@@ -73,7 +73,7 @@ const configurePassport = () => {
           rejectedUsers: user.rejectedUsers,
           blockedUsers: user.blockedUsers,
           verified: user.verified,
-          profilePics: user.profilePics,
+          profilePictures: user.profilePictures,
           createdAt: user.createdAt,
         };
 

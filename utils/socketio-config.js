@@ -1,6 +1,6 @@
 // socket-server.js
-
 import { Server } from 'socket.io';
+import { createChat, putChat } from '../controllers/ChatController.js';
 
 const userSocketMap = new Map();
 let io;
@@ -116,18 +116,11 @@ const disassociateSocketFromUser = (userId) => {
 // Function to save the message to the database (to be implemented)
 const saveMessageToDatabase = async(data) => {
     if (data.chatId === null) {
-        try {
-            const chatInfo = await ChatController.createChat([data.sender.userId, data.recipient._id]);
-            const chatId = chatInfo._id;
-            // Save the message to the database
-            const saveMessage = await ChatController.putChat(data.sender.userId, chatId, data.message);
-        } catch(err) {
-            console.log(err);
-        }
+        return;
     } else {
         try {
             // Save the message to the database
-            const saveMessage = await ChatController.putChat(data.sender.userId, data.chatId, data.message);
+            const saveMessage = await putChat(data.sender.userId, data.chatId, data.message);
         } catch(err) {
             console.log(err);
         }
