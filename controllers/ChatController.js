@@ -23,14 +23,10 @@ export const getChat = async(req,res,next) => {
 export const updateChatToSeen = async(req,res,next) => {
     try {
         const userId = req.user._id;
-        const chatId = req.query.chatId;
-
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            throw new AppError(400, "Invalid :userId parameter");
-        }
+        const chatId = req.query.id;
 
         if (!mongoose.Types.ObjectId.isValid(chatId)) {
-            throw new AppError(400, "Invalid :chatId parameter");
+            throw new AppError(400, "Invalid id query");
         }
 
         const chat = await ChatService.updateChatToSeen(userId, chatId);
@@ -47,11 +43,7 @@ export const getChats = async(req,res,next) => {
         const page = req.query.page;
 
         if (!page || page < 1) {
-            throw new AppError(400, "Invalid :page parameter");
-        }
-
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            throw new AppError(400, "Invalid :userId parameter");
+            throw new AppError(400, "Invalid page query");
         }
 
         const chats = await ChatService.getChats(userId, page);
@@ -101,30 +93,30 @@ export const createChat = async(participants) => {
     }
 } 
 
-export const putChat = async(userId, chatId, message) => {
+export const putChat = async(user, chatId, message) => { // this
     try {
     
         if (!chatId) throw new AppError(400, "Invalid :chatId parameter");
         
         const chatPartcipants = await ChatService.getParticipants(chatId);
 
-        if (chatPartcipants.participants.indexOf(userId) === -1) throw new AppError(401, "Unauthorized to access chat!");
+        if (chatPartcipants.participants.indexOf(user._id) === -1) throw new AppError(401, "Unauthorized to access chat!");
         
-        const recipient = chatPartcipants.participants[0] === userId ? chatPartcipants.participants[0] : chatPartcipants.participants[1];
+        const recipient = chatPartcipants.participants[0] ===  user._id ? chatPartcipants.participants[0] : chatPartcipants.participants[1];
 
         const chat = await ChatService.getChat(chatId   , 1);
 
         if (!chat) throw new AppError(404, "Chat not found!");
 
         const messageObj = {
-            senderId: userId,
+            senderId: user._id,
             recipientId: recipient,
             content: message,
-            seenBy: [userId],
+            seenBy: [user._id],
         };
 
         const charResult = await ChatService.putChat(chatId, messageObj);
-        return charResult;
+        return messageObj;
     
     } catch (err) {
         console.log(err);

@@ -22,7 +22,7 @@ export const getChat = async(chatId, userId, page) => {
     return result;
 }
 
-export const getChats = async(userID, page) => {
+export const getChats = async(userID, page) => { // this
     const result = await Chat.find({ participants: { $in: [userID] } }, 'participants lastMessage updatedAt')
         .sort({ updatedAt: -1 })
         .skip((page - 1) * 20)
@@ -36,7 +36,7 @@ export const getChats = async(userID, page) => {
 
 export const getUndreadChatsCount = async(userId) => {
     const result = await Chat.find({ participants: { $in: [userId] } })
-        .populate('lastMessage', 'seenBy')
+        .populate('lastMessage')
         .exec();
     let count = 0;
     result.forEach(chat => {
@@ -54,7 +54,11 @@ export const getUndreadChatsCount = async(userId) => {
 }
 
 export const updateChatToSeen = async(userId, chatId) => {
-    const result = await Message.updateMany({ _id: chatId }, { $push: { seenBy: userId } }).exec();
+
+    const chatInfo= await Chat.findById( chatId ).exec();
+    
+    const result = await Message.findByIdAndUpdate( chatInfo.lastMessage, { $push: { seenBy: userId} } ).exec();
+    
     return result;
 }
 

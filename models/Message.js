@@ -20,7 +20,7 @@ const messageSchema = new Schema({
   seenBy: {
     type: [Schema.Types.ObjectId],
     ref: 'User',
-  }
+  },
 }, {timestamps: true});
 
 const Message = mongoose.model('Message', messageSchema);

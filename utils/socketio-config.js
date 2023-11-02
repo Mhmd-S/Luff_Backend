@@ -85,25 +85,25 @@ const handleSendMessage = async (io, socket, userId, data) => {
     const recipientId = data.recipient._id;
     const recipientSocketId = userSocketMap.get(recipientId);
 
+    console.log(data.recipient)
+
     data.sender = {
-        userId: userId,
-        username: socket.request.user.name,
-        profilePicture: socket.request.user.profilePicture,
+        _id: userId,
+        name: socket.request.user.name,
+        profilePictures: socket.request.user.profilePictures,
     };
 
     data.timestamp = Date.now();
 
+    
     // Send the message to the intended recipient if they are online
     if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
-        io.to(recipientSocketId).emit('receive-message', data);
-    }
-
-    try {
-        saveMessageToDatabase(data);
-         // Refelect the message back to the sender
-        socket.emit('sent-message', data);
-    } catch (err) {
-        socket.emit('error', 'Could not save message to the database');
+        try{
+            const response = await saveMessageToDatabase(data);
+            io.to(recipientSocketId).emit('receive-message', data);
+        } catch(err) {
+            console.log('error','Could not send message to recipient')
+        }
     }
 
 }
@@ -113,14 +113,15 @@ const disassociateSocketFromUser = (userId) => {
     userSocketMap.delete(userId);
 }
 
-// Function to save the message to the database (to be implemented)
-const saveMessageToDatabase = async(data) => {
+
+const saveMessageToDatabase = async(data) => { // this
     if (data.chatId === null) {
         return;
     } else {
         try {
             // Save the message to the database
-            const saveMessage = await putChat(data.sender.userId, data.chatId, data.message);
+            const saveMessage = await putChat(data.sender, data.chatId, data.message);
+            return saveMessage;
         } catch(err) {
             console.log(err);
         }
