@@ -16,4 +16,6 @@ router.get('/get-unread-chats-count', checkAuth, ChatController.getUndreadChatsC
 // Update chat to seen. Takes User Id and Chat Id as query paramters.
 router.put('/update-chat-to-seen', checkAuth, ChatController.updateChatToSeen);
 
+// router.put('/update-message-to-seen', checkAuth, ChatController.updateMessageToSeen);
+
 export default router;

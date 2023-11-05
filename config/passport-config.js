@@ -36,7 +36,7 @@ const configureLocalStrategy = (userModel, strategyName) => {
         };
         return done(null, userData);
       } else {
-        return done(null, false, { message: 'Incorrect password' });
+        return done(null, false, { message: 'Invalid email or password' });
       }
     } catch (error) {
       return done(error); // Return the error to the done callback

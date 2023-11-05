@@ -1,6 +1,6 @@
 // socket-server.js
 import { Server } from 'socket.io';
-import { createChat, putChat } from '../controllers/ChatController.js';
+import { createChat, updateMessageToSeen, putChat } from '../controllers/ChatController.js';
 
 const userSocketMap = new Map();
 let io;
@@ -63,6 +63,10 @@ const configureSocketEventHandlers = (io) => {
             handleSendMessage(io, socket, userId, data);
         });
 
+        socket.on('read-message', async (data) => {
+            handleUpdateMessageToSeen(io, socket, userId, data);
+        });
+
         socket.on('disconnect', () => {
             disassociateSocketFromUser(userId);
         });
@@ -100,12 +104,21 @@ const handleSendMessage = async (io, socket, userId, data) => {
     if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
         try{
             const response = await saveMessageToDatabase(data);
-            io.to(recipientSocketId).emit('receive-message', data);
+            io.to(recipientSocketId).emit('receive-message', response);
         } catch(err) {
             console.log('error','Could not send message to recipient')
         }
     }
 
+}
+
+const handleUpdateMessageToSeen = async (io, socket, userId, data) => {
+    try{
+        const response = await updateMessageToSeen(userId, data.messageId);
+        io.to(userId).emit('update-message-to-seen', response);
+    } catch(err){   
+        console.log('error', 'Could not update message to seen');
+    }
 }
 
 // Disassociate a socket from a user in the map

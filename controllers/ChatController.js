@@ -70,6 +70,20 @@ export const getUndreadChatsCount = async(req,res,next) => {
     }
 }
 
+export const updateMessageToSeen = async(userId, messageId) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(messageId)) {
+            throw new AppError(400, "Invalid :messageId parameter");
+        }
+
+        const message = await ChatService.updateMessageToSeen(userId, messageId);
+
+        res.status(200).json({ status: "success", data: message });
+    } catch (err) {
+        next(err);
+    }
+}
+
 // The code below is used by sockets only
 // Handle Errors diffrently
 
@@ -115,8 +129,8 @@ export const putChat = async(user, chatId, message) => { // this
             seenBy: [user._id],
         };
 
-        const charResult = await ChatService.putChat(chatId, messageObj);
-        return messageObj;
+        const result = await ChatService.putChat(chatId, messageObj);
+        return result;
     
     } catch (err) {
         console.log(err);
