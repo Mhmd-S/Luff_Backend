@@ -24,12 +24,13 @@ export const updateChatToSeen = async(req,res,next) => {
     try {
         const userId = req.user._id;
         const chatId = req.query.id;
+        const page = req.query.page;
 
         if (!mongoose.Types.ObjectId.isValid(chatId)) {
             throw new AppError(400, "Invalid id query");
         }
 
-        const chat = await ChatService.updateChatToSeen(userId, chatId);
+        const chat = await ChatService.updateChatToSeen(userId, chatId, page);
 
         res.status(200).json({ status: "success", data: chat });
     }  catch (err) {
@@ -107,26 +108,26 @@ export const createChat = async(participants) => {
     }
 } 
 
-export const putChat = async(user, chatId, message) => { // this
+export const putChat = async(sender, chatId, message) => { // this
     try {
     
         if (!chatId) throw new AppError(400, "Invalid :chatId parameter");
         
         const chatPartcipants = await ChatService.getParticipants(chatId);
 
-        if (chatPartcipants.participants.indexOf(user._id) === -1) throw new AppError(401, "Unauthorized to access chat!");
+        if (chatPartcipants.participants.indexOf(sender._id) === -1) throw new AppError(401, "Unauthorized to access chat!");
         
-        const recipient = chatPartcipants.participants[0] ===  user._id ? chatPartcipants.participants[0] : chatPartcipants.participants[1];
+        const recipient = chatPartcipants.participants[0] ===  sender._id ? chatPartcipants.participants[0] : chatPartcipants.participants[1];
 
         const chat = await ChatService.getChat(chatId   , 1);
 
         if (!chat) throw new AppError(404, "Chat not found!");
 
         const messageObj = {
-            senderId: user._id,
+            senderId: sender._id,
             recipientId: recipient,
             content: message,
-            seenBy: [user._id],
+            seenBy: [sender._id],
         };
 
         const result = await ChatService.putChat(chatId, messageObj);

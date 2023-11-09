@@ -11,9 +11,9 @@ export const getChat = async(chatId, page) => {
         path: 'messages',
         select: 'senderId content seenBy createdAt',
         options: {
-            sort: { updatedAt: -1 },
-            limit: 25,
-            skip: (page-1) * 25
+            sort: { createdAt: 1 },
+            skip: (page-1) * 30,
+            limit: 30,
         },
     })
     .populate({
@@ -24,7 +24,6 @@ export const getChat = async(chatId, page) => {
 
 export const getChats = async(userID, page) => { // this
     const result = await Chat.find({ participants: { $in: [userID] } }, 'participants lastMessage updatedAt')
-        .sort({ updatedAt: -1 })
         .skip((page - 1) * 20)
         .limit(20)
         .populate('participants', 'name profilePictures')
@@ -53,16 +52,26 @@ export const getUndreadChatsCount = async(userId) => {
     return result;
 }
 
-export const updateChatToSeen = async(userId, chatId) => {
-
-    const chatInfo = await Chat.findById( chatId ).exec();
+// Updates a batch of 25 messages for chat to seen using the userId
+export const updateChatToSeen = async(userId, chatId, page) => {
+    const chatInfo = await Chat.findById(chatId, 'messages').exec();
     
-    const result = await Message.findByIdAndUpdate( chatInfo.lastMessage, { $push: { seenBy: userId} } ).exec();
+    let messages = await Message.find({ _id: { $in: chatInfo.messages } })
+        .sort({ updatedAt: -1 })
+        .skip((page - 1) * 25)
+        .limit(25)
+        .exec();
+
+    messages = messages.filter(message => !message.seenBy.includes(userId));
+    
+    const messageIds = messages.map(message => message._id);
+    
+    const result = await Message.updateMany({ _id: { $in: messageIds } }, { $addToSet: { seenBy: userId } }).exec();
     
     return result;
 }
 
-export const updateMessagetoSeen = async(userId, messageId) => {
+export const updateMessageToSeen = async(userId, messageId) => {
     const result = await Message.findByIdAndUpdate( messageId, { $push: { seenBy: userId} } ).exec();
     return result;
 }
@@ -76,11 +85,19 @@ export const checkChatExists = async(chatId) => {
     }
 }
 
-export const putChat = async(chatId, messageObj) => {
-    const message = new Message({...messageObj});
+export const putChat = async (chatId, messageObj) => {
+    const message = new Message({ ...messageObj });
     const messageResult = await message.save();
-    
-    await Chat.findByIdAndUpdate(chatId, { lastMessage: messageResult._id, $push: { messages: messageResult._id } }).exec();
-    
+
+    const response = await Chat.findByIdAndUpdate(chatId, {
+        lastMessage: messageResult._id,
+        $push: {
+            messages: {
+                $each: [messageResult._id],
+                $position: 0,
+            },
+        },
+    }).exec();
+
     return messageResult;
-}
+};
