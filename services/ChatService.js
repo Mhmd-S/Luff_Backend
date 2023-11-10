@@ -11,14 +11,16 @@ export const getChat = async(chatId, page) => {
         path: 'messages',
         select: 'senderId content seenBy createdAt',
         options: {
-            sort: { createdAt: 1 },
-            skip: (page-1) * 30,
+            skip: (page - 1) * 30,
             limit: 30,
         },
     })
     .populate({
         path: 'lastMessage',
     }).exec();
+
+    result.messages.reverse(); // Reverse the messages array so the newest messages are at the end, easier to display in the client
+
     return result;
 }
 
@@ -87,8 +89,11 @@ export const checkChatExists = async(chatId) => {
 
 export const putChat = async (chatId, messageObj) => {
     const message = new Message({ ...messageObj });
+
+    // Save the message
     const messageResult = await message.save();
 
+    // Update the chat
     const response = await Chat.findByIdAndUpdate(chatId, {
         lastMessage: messageResult._id,
         $push: {
@@ -99,5 +104,7 @@ export const putChat = async (chatId, messageObj) => {
         },
     }).exec();
 
+    // Return
     return messageResult;
 };
+    

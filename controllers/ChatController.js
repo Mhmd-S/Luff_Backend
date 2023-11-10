@@ -115,23 +115,35 @@ export const putChat = async(sender, chatId, message) => { // this
         
         const chatPartcipants = await ChatService.getParticipants(chatId);
 
+        // Check if user authorized to access chat
         if (chatPartcipants.participants.indexOf(sender._id) === -1) throw new AppError(401, "Unauthorized to access chat!");
         
+        // Figure out the recipient from the chat participants
         const recipient = chatPartcipants.participants[0] ===  sender._id ? chatPartcipants.participants[0] : chatPartcipants.participants[1];
 
+        // Check if chat is valid
         const chat = await ChatService.getChat(chatId   , 1);
-
         if (!chat) throw new AppError(404, "Chat not found!");
 
+        // Message obj to be saved in database
         const messageObj = {
             senderId: sender._id,
+            chatId: chatId,
             recipientId: recipient,
             content: message,
             seenBy: [sender._id],
         };
 
+        // Save message to database
         const result = await ChatService.putChat(chatId, messageObj);
-        return result;
+
+        // Message obj to be sent to client
+        const msg = {
+            ...result._doc,
+            sender: sender,
+        }
+
+        return msg;
     
     } catch (err) {
         console.log(err);
