@@ -6,13 +6,18 @@ export const getParticipants = async(chatId) => {
     return result; 
 }
 
-export const getChat = async(chatId, page) => {
+export const getChat = async(chatId, pageNumber) => {
+
+    const nPerPage = 30;
+    const skipFormula = ( pageNumber > 0 ? ( ( pageNumber - 1 ) * nPerPage ) : 0 );
+
     const result = await Chat.findById(chatId).populate({
         path: 'messages',
         select: 'senderId content seenBy createdAt',
         options: {
-            skip: (page - 1) * 30,
-            limit: 30,
+            sort: { createdAt: -1 },
+            skip: skipFormula,
+            limit: nPerPage,
         },
     })
     .populate({
@@ -24,10 +29,14 @@ export const getChat = async(chatId, page) => {
     return result;
 }
 
-export const getChats = async(userID, page) => { // this
+export const getChats = async(userID, pageNumber) => { 
+
+    const nPerPage = 20;
+    const skipFormula = ( pageNumber > 0 ? ( ( pageNumber - 1 ) * nPerPage ) : 0 );
+
     const result = await Chat.find({ participants: { $in: [userID] } }, 'participants lastMessage updatedAt')
-        .skip((page - 1) * 20)
-        .limit(20)
+        .skip(skipFormula)
+        .limit(nPerPage)
         .populate('participants', 'name profilePictures')
         .populate('lastMessage', 'content updatedAt seenBy')
         .exec();

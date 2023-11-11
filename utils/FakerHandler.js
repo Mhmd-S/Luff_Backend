@@ -1,4 +1,6 @@
-import User from "../models/User.js";
+import Chat from '../models/Chat';
+import User from '../models/User';
+import Message from '../models/Message';
 import { faker } from '@faker-js/faker';
 
 export const populateUsers = async() => {
@@ -19,3 +21,40 @@ export const populateUsers = async() => {
       }
   
 }
+
+export const populateChats = async() => {
+    const users = await User.find({}, '_id').exec();
+    for (let i = 0; i < 100; i++) {
+        const chat = new Chat({
+            participants: [users[Math.floor(Math.random() * users.length)]._id, users[Math.floor(Math.random() * users.length)]._id],
+            messages: [],
+        });
+        await chat.save();
+        console.log(`Inserted chat ${i + 1}`);
+    }
+}
+
+export const populateMessages = async() => {
+    const chats = await Chat.find({}, '_id').exec();
+    for (let i = 0; i < 500; i++) {
+        const message = new Message({
+            sender: faker.random.boolean() ? chats[Math.floor(Math.random() * chats.length)].participants[0] : chats[Math.floor(Math.random() * chats.length)].participants[1],
+            content: faker.lorem.sentence(),
+            seenBy: [],
+        });
+        await message.save();
+        console.log(`Inserted message ${i + 1}`);
+    }
+}
+
+export const populateMessagesToChats = async() => {
+    const chats = await Chat.find({}, '_id').exec();
+    const messages = await Message.find({}, '_id').exec();
+    for (let i = 0; i < 500; i++) {
+        const chat = await Chat.findById(chats[Math.floor(Math.random() * chats.length)]._id).exec();
+        chat.messages.push(messages[Math.floor(Math.random() * messages.length)]._id);
+        await chat.save();
+        console.log(`Inserted message ${i + 1}`);
+    }
+}
+

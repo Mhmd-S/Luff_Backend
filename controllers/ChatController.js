@@ -71,27 +71,29 @@ export const getUndreadChatsCount = async(req,res,next) => {
     }
 }
 
-export const updateMessageToSeen = async(userId, messageId) => {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(messageId)) {
-            throw new AppError(400, "Invalid :messageId parameter");
-        }
-
-        const message = await ChatService.updateMessageToSeen(userId, messageId);
-
-        res.status(200).json({ status: "success", data: message });
-    } catch (err) {
-        next(err);
-    }
-}
 
 // The code below is used by sockets only
 // Handle Errors diffrently
 
+export const updateMessageToSeen = async(userId, messageId) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(messageId)) {
+            throw new AppError(400, "Invalid messageId");
+        }
+
+        const message = await ChatService.updateMessageToSeen(userId, messageId);
+
+        return { status: "success", data: message };
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+
 export const createChat = async(participants) => {
     try {
 
-        if (!participants) throw new AppError(400, "Invalid :participants parameter");
+        if (!participants) throw new AppError(400, "Invalid participants ");
 
         if (!Array.isArray(participants)) throw new AppError(400, "Invalid :participants parameter");
 

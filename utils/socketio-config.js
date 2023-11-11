@@ -1,6 +1,7 @@
 // socket-server.js
 import { Server } from 'socket.io';
-import { createChat, updateMessageToSeen, putChat } from '../controllers/ChatController.js';
+import { updateMessageToSeen, putChat } from '../controllers/ChatController.js';
+import { errorHandlers } from './errorHandler';
 
 const userSocketMap = new Map();
 let io;
@@ -47,7 +48,7 @@ const configureSocketMiddleware = (io, sessionMiddleware, passport) => {
         if (socket.request.user) {
             next();
         } else {
-            next(new Error('Unauthorized'));
+            errorHandlers.handleSocketError(socket, 'Unauthorized');
         }
     });
 }
@@ -60,39 +61,34 @@ const configureSocketEventHandlers = (io) => {
         associateSocketWithUser( userId, socket);
 
         socket.on('send-message', async (data) => {
-            handleSendMessage(io, socket, userId, data);
+            try {
+                await handleSendMessage(io, socket, userId, data);
+            } catch (error) {
+                errorHandlers.handleSocketError(error, socket);
+            }
         });
 
         socket.on('read-message', async (data) => {
-            handleUpdateMessageToSeen(io, socket, userId, data);
+            try {
+                await handleUpdateMessageToSeen(io, socket, userId, data);
+            } catch (error) {
+                errorHandlers.handleSocketError(error, socket);
+            }
         });
 
         socket.on('disconnect', () => {
             disassociateSocketFromUser(userId);
         });
 
-        socket.on('error', (error) => {
-            console.error('Socket error:', error);
-            socket.emit('error', 'An error occurred on the server.');
-        });
     });
 }
 
-// Associate a socket with a user in the map
-const associateSocketWithUser = (userId, socket) => {
-    userSocketMap.set(userId, socket.id);
-    socket.join(userId);
-}
-
+// Handlers for Socket.IO events
 // Handle the 'send-message' event
 const handleSendMessage = async (io, socket, userId, data) => {
 
     const recipientId = data.recipient._id;
     const recipientSocketId = userSocketMap.get(recipientId);
-
-    console.log('recipientSocketId', recipientSocketId);
-    console.log('map', userSocketMap);
-    console.log('id', recipientId);
 
     data.sender = {
         _id: userId,
@@ -103,46 +99,32 @@ const handleSendMessage = async (io, socket, userId, data) => {
     data.timestamp = Date.now();
 
     // Save the message to the database
-    const response = await saveMessageToDatabase(data);
-
+    try{
+        const saveMessage = await putChat(data.sender, data.chatId, data.message);
+    }catch(err){
+        errorHandlers.handleSocketError(err, socket);
+    }
     // Send the message to the intended recipient if they are online
     if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
-        try{
-            io.to(recipientSocketId).emit('receive-message', response);
-        } catch(err) {
-            console.log('error','Could not send message to recipient')
-        }
+        io.to(recipientSocketId).emit('receive-message', saveMessage);
     }
 
 }
 
 const handleUpdateMessageToSeen = async (io, socket, userId, data) => {
-    try{
-        const response = await updateMessageToSeen(userId, data.messageId);
-        io.to(userId).emit('update-message-to-seen', response);
-    } catch(err){   
-        console.log('error', 'Could not update message to seen');
-    }
+    const response = await updateMessageToSeen(userId, data.messageId);
+    io.to(userId).emit('update-message-to-seen', response);
+}
+
+// Associate a socket with a user in the map
+const associateSocketWithUser = (userId, socket) => {
+    userSocketMap.set(userId, socket.id);
+    socket.join(userId);
 }
 
 // Disassociate a socket from a user in the map
 const disassociateSocketFromUser = (userId) => {
     userSocketMap.delete(userId);
-}
-
-const saveMessageToDatabase = async(data) => { // this
-    if (data.chatId === null) {
-        return;
-    }
-    
-    try {
-        // Save the message to the database
-        const saveMessage = await putChat(data.sender, data.chatId, data.message);
-        return saveMessage;
-    } catch(err) {
-        console.log(err);
-    }
-    
 }
 
 // Function to emit a match

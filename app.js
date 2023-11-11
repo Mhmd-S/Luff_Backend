@@ -15,7 +15,7 @@ import ChatRouter from './routes/ChatRouter';
 // Import configs
 import { configureSession } from './config/session-config';
 import { configureCors } from './config/cors-config';
-import { populateUsers } from './utils/FakerHandler';
+import { populateChats, populateMessages, populateMessagesToChats, populateUsers } from './utils/FakerHandler';
 import { createSocketServer } from './utils/socketio-config';
 
 const app = express();
@@ -52,8 +52,6 @@ app.use('/chat', ChatRouter);
 
 // IO Server setup
 createSocketServer(httpServer, sessionMiddleware, passport);
-
-// populateUsers();
 
 // Catching 404 and forwarding it to error handler
 app.use((req,res,next) => {

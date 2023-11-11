@@ -65,4 +65,10 @@ export const errorHandlers = {
       message: errorsObject,
     });
   },
+
+  handleSocketError(err, socket) {
+    // Handle errors from socket connections
+    console.error(err);
+    socket.emit("error", err);
+  },
 };
