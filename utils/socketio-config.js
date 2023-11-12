@@ -48,7 +48,7 @@ const configureSocketMiddleware = (io, sessionMiddleware, passport) => {
         if (socket.request.user) {
             next();
         } else {
-            errorHandlers.handleSocketError(socket, 'Unauthorized');
+            errorHandlers.handleSocketError('Unauthorized', io, socket.id);
         }
     });
 }
@@ -64,7 +64,7 @@ const configureSocketEventHandlers = (io) => {
             try {
                 await handleSendMessage(io, socket, userId, data);
             } catch (error) {
-                errorHandlers.handleSocketError(error, socket);
+                errorHandlers.handleSocketError(error, io, socket.id);
             }
         });
 
@@ -72,7 +72,7 @@ const configureSocketEventHandlers = (io) => {
             try {
                 await handleUpdateMessageToSeen(io, socket, userId, data);
             } catch (error) {
-                errorHandlers.handleSocketError(error, socket);
+                 errorHandlers.handleSocketError(error, io, socket.id);
             }
         });
 
@@ -102,7 +102,7 @@ const handleSendMessage = async (io, socket, userId, data) => {
     try{
         const saveMessage = await putChat(data.sender, data.chatId, data.message);
     }catch(err){
-        errorHandlers.handleSocketError(err, socket);
+        errorHandlers.handleSocketError(err, io, socket.id);
     }
     // Send the message to the intended recipient if they are online
     if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {

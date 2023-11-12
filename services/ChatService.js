@@ -24,8 +24,6 @@ export const getChat = async(chatId, pageNumber) => {
         path: 'lastMessage',
     }).exec();
 
-    result.messages.reverse(); // Reverse the messages array so the newest messages are at the end, easier to display in the client
-
     return result;
 }
 

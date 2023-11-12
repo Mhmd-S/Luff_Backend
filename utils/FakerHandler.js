@@ -26,7 +26,7 @@ export const populateChats = async() => {
     const users = await User.find({}, '_id').exec();
     for (let i = 0; i < 100; i++) {
         const chat = new Chat({
-            participants: [users[Math.floor(Math.random() * users.length)]._id, users[Math.floor(Math.random() * users.length)]._id],
+            participants: ['652c9907d5f4faaccd2e0ab0', users[Math.floor(Math.random() * users.length)]._id],
             messages: [],
         });
         await chat.save();
@@ -35,13 +35,22 @@ export const populateChats = async() => {
 }
 
 export const populateMessages = async() => {
-    const chats = await Chat.find({}, '_id').exec();
+    const chats = await Chat.find().exec();
     for (let i = 0; i < 500; i++) {
+        
+        const senderid = faker.datatype.boolean() ? '652c9907d5f4faaccd2e0ab0' : chats[Math.floor(Math.random() * chats.length)].participants[1];
+        
+        const chatId = chats[Math.floor(Math.random() * chats.length)]._id;
+        
         const message = new Message({
-            sender: faker.random.boolean() ? chats[Math.floor(Math.random() * chats.length)].participants[0] : chats[Math.floor(Math.random() * chats.length)].participants[1],
+            senderId: senderid,
+            recipientId: senderid === '652c9907d5f4faaccd2e0ab0' ? chats[Math.floor(Math.random() * chats.length)].participants[1] : '652c9907d5f4faaccd2e0ab0',    
             content: faker.lorem.sentence(),
-            seenBy: [],
+            chatId: chatId,
+            seenBy: [senderid],
+            createdAt: faker.date.past(),
         });
+        await Chat.findByIdAndUpdate(chatId, { lastMessage: message._id, $push: { messages: message._id } }).exec();
         await message.save();
         console.log(`Inserted message ${i + 1}`);
     }

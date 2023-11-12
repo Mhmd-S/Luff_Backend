@@ -5,16 +5,33 @@ import mongoose from 'mongoose';
 
 export const getChat = async(req,res,next) => {
     try{
+
         const chatId = req.query.chatId;
         const page = req.query.page;
  
         if (!page || page < 1) {
-            throw new AppError(400, "Invalid :page parameter");
+            throw new AppError(400, "Invalid page parameter");
         }
 
         const chat = await ChatService.getChat(chatId, page);
 
+
+        if (!chat) {
+            throw new AppError(404, "Chat not found!");
+        }
+
+        // Check if user authorized to access chat
+        if (chat.participants.indexOf(req.user._id) === -1) {
+            throw new AppError(401, "Unauthorized to access chat!");
+        }
+
+        // Reverse the messages array so the newest messages are at the end, easier to display in the client
+        if (chat?.messages) {
+            chat.messages.reverse();
+        }
+
         res.status(200).json({ status: "success", data: chat });
+
     } catch (err) {
         next(err);
     }
@@ -28,6 +45,10 @@ export const updateChatToSeen = async(req,res,next) => {
 
         if (!mongoose.Types.ObjectId.isValid(chatId)) {
             throw new AppError(400, "Invalid id query");
+        }
+
+        if (!page || page < 1) {
+            throw new AppError(400, "Invalid page query");
         }
 
         const chat = await ChatService.updateChatToSeen(userId, chatId, page);

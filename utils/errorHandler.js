@@ -66,9 +66,9 @@ export const errorHandlers = {
     });
   },
 
-  handleSocketError(err, socket) {
+  handleSocketError(err, io, recipientSocketId) {
     // Handle errors from socket connections
     console.error(err);
-    socket.emit("error", err);
+    io.to(recipientSocketId).emit("error", err);
   },
 };
