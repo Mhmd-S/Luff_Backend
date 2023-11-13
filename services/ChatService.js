@@ -33,6 +33,7 @@ export const getChats = async(userID, pageNumber) => {
     const skipFormula = ( pageNumber > 0 ? ( ( pageNumber - 1 ) * nPerPage ) : 0 );
 
     const result = await Chat.find({ participants: { $in: [userID] } }, 'participants lastMessage updatedAt')
+        .sort({ updatedAt: -1 })
         .skip(skipFormula)
         .limit(nPerPage)
         .populate('participants', 'name profilePictures')
@@ -44,14 +45,18 @@ export const getChats = async(userID, pageNumber) => {
 
 export const getUndreadChatsCount = async(userId) => {
     const result = await Chat.find({ participants: { $in: [userId] } })
+        .sort({ updatedAt: -1 })
         .populate('lastMessage')
         .exec();
+
     let count = 0;
+    
     result.forEach(chat => {
         if (chat.lastMessage == null || !chat.lastMessage.seenBy.includes(userId)) {
             count++;
         }
     });
+    
     return count;
 }
 

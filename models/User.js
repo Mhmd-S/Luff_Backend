@@ -19,12 +19,11 @@
         },
         gender: {
             type: String,
-            // must be either male or female
-            enum: ['male', 'female']
+            enum: ['1', '2'] // 1 male, 2 female
         },
         orientation: {
             type: String,
-            enum: ['male', 'female']
+            enum: ['1', '2'] // 1 male, 2 female
         },
         matches: {
             type: [Schema.Types.ObjectId],

@@ -101,14 +101,13 @@ const handleSendMessage = async (io, socket, userId, data) => {
     // Save the message to the database
     try{
         const saveMessage = await putChat(data.sender, data.chatId, data.message);
+         // Send the message to the intended recipient if they are online
+        if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
+            io.to(recipientSocketId).emit('receive-message', saveMessage);
+        }
     }catch(err){
         errorHandlers.handleSocketError(err, io, socket.id);
     }
-    // Send the message to the intended recipient if they are online
-    if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
-        io.to(recipientSocketId).emit('receive-message', saveMessage);
-    }
-
 }
 
 const handleUpdateMessageToSeen = async (io, socket, userId, data) => {

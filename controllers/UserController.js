@@ -145,6 +145,11 @@ export const updateBio = async (req, res, next) => {
 
 
 export const updateGender = async (req, res, next) => {
+
+    if (req.body.gender !== '1' && req.body.gender !== '2') {
+        return next(new AppError(400, 'Invalid gender'))
+    }
+
     try {
         await UserService.updateGender(req.user._id, req.body.gender);
     } catch(err) {
@@ -152,11 +157,16 @@ export const updateGender = async (req, res, next) => {
     }
 
     res.status(200).json({ status: 'success', message:"User's gender updated"});
-    }
+}
 
 export const updateOrientation = async (req, res, next) => {
+
+    if (req.body.orientation !== '1' && req.body.orientation !== '2') {
+        return next(new AppError(400, 'Invalid orientation'))
+    }
+
     try {
-        await UserService.updateOrientation(req.user._id, req.body.gender);
+        await UserService.updateOrientation(req.user._id, req.body.orientation);
     } catch(err) {
         return next(new AppError(500, err));
     }
