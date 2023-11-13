@@ -14,7 +14,7 @@ export const getChat = async(req,res,next) => {
         }
 
         const chatPartcipants = await ChatService.getParticipants(req.query.chatId);
-        if (chatPartcipants.indexOf(req.user._id) === -1) {
+        if (chatPartcipants.participants.indexOf(req.user._id) === -1) {
             throw new AppError(401, "Unauthorized to access chat!");
         }
  

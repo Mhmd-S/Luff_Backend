@@ -99,14 +99,15 @@ export const addProfilePicture = async (userId, profilePictureLink, picNum) => {
     return result;
 }
 
-export const deleteProfilePicture = async(userId, picNum) => {
-    const result = await User.findByIdAndUpdate(userId, { 
-        $set: { 
-            [`profilePictures.${picNum}`]: '' 
-        } 
+export const deleteProfilePicture = async (userId, picNum) => {
+    const result = await User.findByIdAndUpdate(userId, {
+        $unset: {
+            [`profilePictures.${picNum}`]: 1
+        }
     }).exec();
     return result;
-}
+};
+
 
 export const resetPasswordRequest = async(userId, hashedToken) => {
     const token = new ResetToken({
