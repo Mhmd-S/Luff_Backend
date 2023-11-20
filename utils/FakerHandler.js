@@ -5,15 +5,22 @@ import { faker } from '@faker-js/faker';
 
 export const populateUsers = async() => {
     for (let i = 0; i < 100; i++) {
+        const gender = faker.number.int({ min: 1, max: 2 });
+        const gnd = gender == 1 ? 'man,portrait,asian' : 'portrait,women,asian'
         const user = new User({
             name: faker.person.fullName(),
             password: faker.internet.password(),
             email: faker.internet.email(),
             dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
-            gender: faker.person.sexType(),
-            orientation: faker.person.sexType(),
+            gender:  gender,
+            orientation: faker.number.int({ min: 1, max: 2 }) ,
             bio: faker.person.bio(),
             onboardStep: 2,
+            profilePictures: { 
+                            '0': faker.image.urlLoremFlickr({ category: gnd }), 
+                            '1': faker.image.urlLoremFlickr({ category: gnd }), 
+                            '2': faker.image.urlLoremFlickr({ category: gnd }), 
+                            }
         });
   
         await user.save();

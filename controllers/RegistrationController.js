@@ -3,17 +3,19 @@ import * as UserService from '../services/UserService.js';
 import { v4 as uuidv4 } from 'uuid';
 import { sendEmail } from '../utils/NodeMailerHandler.js';
 import { AppError } from "../utils/errorHandler.js";
+import * as bcrypt from 'bcrypt';
 
 // Register user. Create a user with the main fields. Email, Name, Password and DOB.
 export const registerUser = async(req, res, next) => {
-    // Hash the user's password
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const userObject = {
-        email: req.body.email,
-        password: hashedPassword,
-    }
     
     try {
+        // Hash the user's password
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const userObject = {
+            email: req.body.email,
+            password: hashedPassword,
+        }
+    
         await UserService.createUser(userObject);
     } catch (err) {
       return next(new AppError(500, err));
@@ -61,7 +63,7 @@ export const checkRegistrationCode = async(req, res, next) => {
     const emailResult = await EmailService.getEmailRegistrationRequest(req.body.email);
 
     if (!emailResult) {
-        throw new AppError(400, 'Email not registered');
+        return next(new AppError(400, 'Email not registered'));
     }
     
     if (emailResult.code === req.body.code) {

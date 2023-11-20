@@ -26,15 +26,7 @@ const validationMiddleware = {
     body('email')
       .matches(/TP[0-9]{6}@mail.apu.edu.my/)
       .withMessage('Invalid email address')
-      .escape()
-      .custom(async(value) => {
-        const isRegistered = await UserService.checkEmailRegistered(value);
-        if (isRegistered) {
-          return 'Email is already registered'
-        }
-        return true;
-        }
-    ),
+      .escape(),
     body('password')
       .isLength({ min: 8, max: 25 })
       .withMessage('Password is required, minimum 8 characters, maximum 25 characters.')
@@ -82,8 +74,15 @@ const validationMiddleware = {
   ],
   genderValidation: [
     body('gender')
-      .matches(/(male|female)/)
+      .matches(/(1|2)/)
       .withMessage('Invalid gender')
+      .escape(),
+    checkError
+  ],
+  orientationValidation: [
+    body('orientation')
+      .matches(/(1|2)/)
+      .withMessage('Invalid orientation')
       .escape(),
     checkError
   ],
@@ -96,7 +95,7 @@ const validationMiddleware = {
   ],
   addProfilePictureValidation:[
     body('picNum')
-      .isInt({ min: 1, max: 6 })
+      .isInt({ min: 0, max: 5 })
       .withMessage('Invalid picture number')
       .escape(),
       checkError

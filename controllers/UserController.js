@@ -104,7 +104,7 @@ export const rejectUser = async(req, res, next) => {
         }
 
         // Check if gender and orientation matches
-        if (rejectedUser.orientation !== req.user.gender || req.user.orientation !== rejectUser.gender) {
+        if (rejectedUser.orientation != req.user.gender || req.user.orientation != rejectedUser.gender) {
             return next(new AppError(400, 'User does not match your preferences'));
         }
         
@@ -145,10 +145,7 @@ export const updateBio = async (req, res, next) => {
 
 
 export const updateGender = async (req, res, next) => {
-
-    if (req.body.gender !== '1' && req.body.gender !== '2') {
-        return next(new AppError(400, 'Invalid gender'))
-    }
+    console.log(req.body.gender);
 
     try {
         await UserService.updateGender(req.user._id, req.body.gender);
@@ -160,13 +157,11 @@ export const updateGender = async (req, res, next) => {
 }
 
 export const updateOrientation = async (req, res, next) => {
-
-    if (req.body.orientation !== '1' && req.body.orientation !== '2') {
-        return next(new AppError(400, 'Invalid orientation'))
-    }
+    console.log(req.body.orientation);
 
     try {
-        await UserService.updateOrientation(req.user._id, req.body.orientation);
+        const resp = await UserService.updateOrientation(req.user._id, req.body.orientation);
+        console.log(resp);
     } catch(err) {
         return next(new AppError(500, err));
     }
@@ -174,7 +169,7 @@ export const updateOrientation = async (req, res, next) => {
     res.status(200).json({ status: 'success', message:"User's orientation updated"});
 }
 
-// Was thinking about the profile picutres schema, and regarding the white spaces
+// Streaming the image to the bucket using multer. Multer returns the file object in req.file
 export const addProfilePicture = [
     uploadUserProfileImage.fields([{ name: 'profilePicture', maxCount: 1 }]),
     userRouteValidation.addProfilePictureValidation, // Used the validation here because the data if multipart and need multer to parse it
@@ -189,7 +184,8 @@ export const addProfilePicture = [
 
         // Check if there are any profile pictures uploaded
         if (profilePicturesKeys.length > 0) {
-        
+
+            // Get the URL of the profile picture
             const profilePictureUrl = req.files.profilePicture[profilePicturesKeys[0]].location;
         
             // Add profile picture's link to the user's profile
@@ -198,6 +194,7 @@ export const addProfilePicture = [
             } catch (err) {
                 return next(new AppError(500, err));
             }
+
         } else {
             return next(new AppError(400, 'No profile picture uploaded'));
         }

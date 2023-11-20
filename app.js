@@ -50,6 +50,10 @@ app.use('/user', UserRouter);
 app.use('/reset', ResetRouter);
 app.use('/chat', ChatRouter);
 
+// Populate database with fake data
+// Fix the images
+// populateUsers();
+
 // IO Server setup
 createSocketServer(httpServer, sessionMiddleware, passport);
 

@@ -55,14 +55,14 @@ export const errorHandlers = {
   handleFormError(err, res) {
     // Handle errors from React Hook Form
     const errorsObject = {};
-  
+
     err.detail.forEach((validationError) => {
       errorsObject[validationError.path] = validationError.msg;
     });
 
     res.status(400).json({
       status: "fail",
-      message: errorsObject,
+      message: err.detail[0].msg,
     });
   },
 

@@ -44,6 +44,12 @@
             type:  Schema.Types.Map,
             of: String,
             default: {
+                0: '',
+                1: '',
+                2: '',
+                3: '',
+                4: '',
+                5: '',
             }
         }, 
         blockedUsers: {

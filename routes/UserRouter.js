@@ -25,7 +25,7 @@ router.put('/update-bio', checkAuth, validationMiddleware.bioValidation, UserCon
 
 router.put('/update-gender', checkAuth, validationMiddleware.genderValidation, UserControllers.updateGender);
 
-router.put('/update-orientation', checkAuth, validationMiddleware.genderValidation, UserControllers.updateOrientation);
+router.put('/update-orientation', checkAuth, validationMiddleware.orientationValidation, UserControllers.updateOrientation);
 
 router.put('/onboard-next', checkAuth, UserControllers.onboardNext);
 
