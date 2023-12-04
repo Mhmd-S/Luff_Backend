@@ -18,13 +18,14 @@ export const getUsers = async(amount, user) => {
 
     const blockedUsers = user.blockedUsers;
     const likedUsers = user.likedUsers;
+    const matchedUsers = user.matches;
     const rejectedUsers = user.rejectedUsers;
 
     const result = await User.find({ 
         gender: user.orientation, 
         orientation: user.gender, 
         onboardStep: 2,
-        _id: { $nin: [...blockedUsers, ...rejectedUsers, ...likedUsers, user._id] 
+        _id: { $nin: [...blockedUsers, ...rejectedUsers, ...likedUsers, matchedUsers,user._id] 
         } 
     }, '_id name dob gender orientation profilePictures bio')
     .limit(amount)
