@@ -134,8 +134,27 @@ const disassociateSocketFromUser = (userId) => {
 };
 
 // Function to emit a match
-export const emitMatch = (userId, match) => {
-	const userSocketId = userSocketMap.get(userId.toString());
+export const emitMatch = async(user, likedUser, chat) => {
+
+	user = {
+		_id: user._id,
+		name: user.name,
+		profilePictures: user.profilePictures,
+	};
+	
+	likedUser = {
+		_id: likedUser._id,
+		name: likedUser.name,
+		profilePictures: likedUser.profilePictures,
+	};
+
+	const match = { 
+		chatId: chat._id,
+		sender: user,
+		recipient: likedUser,
+	}
+
+	const userSocketId = userSocketMap.get(user._id.toString());
 	if (userSocketId && io.sockets.sockets.has(userSocketId)) {
 		io.to(userSocketId).emit('match', match);
 	}

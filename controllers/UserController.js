@@ -81,11 +81,11 @@ export const likeUser = async (req, res, next) => {
 			await UserService.addToMatches(likedUser._id, user._id);
 
 			// Create a chat
-			await ChatController.createChat([user._id, likedUser._id]);
+			const newChat = await ChatController.createChat([user._id, likedUser._id]);
 
 			// Send notification to both users
-			emitMatch(user._id, likedUser);
-			emitMatch(likedUser._id, user);
+			emitMatch(user, likedUser, newChat);
+			emitMatch(likedUser, user, newChat);
 
 			res.status(200).json({
 				status: 'success',

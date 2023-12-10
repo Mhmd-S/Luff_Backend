@@ -4,22 +4,22 @@ import Message from '../models/Message';
 import { faker } from '@faker-js/faker';
 
 export const populateUsers = async() => {
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 25; i++) {
         const gender = faker.number.int({ min: 1, max: 2 });
-        const gnd = gender == 1 ? 'man,portrait,asian' : 'portrait,women,asian'
+        const gnd = 2 == 1 ? 'asian,man' : 'asian,woman'
         const user = new User({
             name: faker.person.fullName(),
             password: faker.internet.password(),
             email: faker.internet.email(),
             dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
-            gender:  gender,
-            orientation: faker.number.int({ min: 1, max: 2 }) ,
+            gender:  2,
+            orientation: faker.number.int({ min: 1, max: 1 }),
             bio: faker.person.bio(),
             onboardStep: 2,
             profilePictures: { 
                             '0': faker.image.urlLoremFlickr({ category: gnd }), 
                             '1': faker.image.urlLoremFlickr({ category: gnd }), 
-                            '2': faker.image.urlLoremFlickr({ category: gnd }), 
+                            '2': faker.image.urlLoremFlickr({ category: gnd }),
                             }
         });
   
