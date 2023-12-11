@@ -51,6 +51,10 @@ export const likeUser = async (req, res, next) => {
 			return next(new AppError(400, 'User does not exist'));
 		}
 
+		if (likedUser.blockedUsers.includes(user._id)) {
+			return next(new AppError(400, 'Can not like user'));
+		}
+
 		// Check if gender and orientation matches
 		if (
 			likedUser.orientation !== req.user.gender ||
@@ -67,9 +71,9 @@ export const likeUser = async (req, res, next) => {
 		}
 
 		// Check if user is already matched
-		if (user.matches.includes(likedUser._id)) {
-			return next(new AppError(400, 'User already matched'));
-		}
+		// if (user.matches.includes(likedUser._id)) {
+		// 	return next(new AppError(400, 'User already matched'));
+		// }
 
 		// Add to Likes
 		await UserService.addToLikedUsers(user._id, likedUser._id);
@@ -81,7 +85,10 @@ export const likeUser = async (req, res, next) => {
 			await UserService.addToMatches(likedUser._id, user._id);
 
 			// Create a chat
-			const newChat = await ChatController.createChat([user._id, likedUser._id]);
+			const newChat = await ChatController.createChat([
+				user._id,
+				likedUser._id,
+			]);
 
 			// Send notification to both users
 			emitMatch(user, likedUser, newChat);
@@ -110,6 +117,15 @@ export const rejectUser = async (req, res, next) => {
 			return next(new AppError(400, 'User does not exist'));
 		}
 
+		// Check if user is already liked
+		if (req.user.rejectedUsers.includes(rejectedUser._id)) {
+			return next(new AppError(400, 'User already rejected'));
+		}
+
+		if (rejectedUser.blockedUsers.includes(user._id)) {
+			return next(new AppError(400, 'Can not reject user'));
+		}
+
 		// Check if gender and orientation matches
 		if (
 			rejectedUser.orientation != req.user.gender ||
@@ -120,17 +136,22 @@ export const rejectUser = async (req, res, next) => {
 			);
 		}
 
-		// Check if user is already liked
-		if (req.user.rejectedUsers.includes(rejectedUser._id)) {
-			return next(new AppError(400, 'User already rejected'));
-		}
-
 		await UserService.addToRejectedUsers(req.user._id, rejectedUser._id);
 	} catch (err) {
 		return next(new AppError(500, err));
 	}
 
 	res.status(200).json({ status: 'success', message: 'User rejected' });
+};
+
+export const blockUser = async (req, res, next) => {
+	try {
+		await UserService.blockUser(req.user._id, req.query.userId);
+	} catch (err) {
+		return next(new AppError(500, err));
+	}
+
+	res.status(200).json({ status: 'success', message: 'User blocked' });
 };
 
 export const updateDOB = async (req, res, next) => {

@@ -52,7 +52,7 @@ app.use('/chat', ChatRouter);
 
 // Populate database with fake data
 // Fix the images
-populateUsers();
+// populateUsers();
 
 // IO Server setup
 createSocketServer(httpServer, sessionMiddleware, passport);

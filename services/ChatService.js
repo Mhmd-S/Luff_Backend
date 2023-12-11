@@ -36,9 +36,16 @@ export const getChats = async(userID, pageNumber) => {
         .sort({ updatedAt: -1 })
         .skip(skipFormula)
         .limit(nPerPage)
-        .populate('participants', 'name profilePictures')
+        .populate('participants', 'name profilePictures blockedUsers')
         .populate('lastMessage', 'content updatedAt seenBy')
         .exec();
+
+    // Filter out chats where either users are blocked
+    result.forEach((chat, index) => {
+        if (chat.participants[0].blockedUsers.includes(userID) || chat.participants[1].blockedUsers.includes(userID)) {
+            result.splice(index, 1);
+        }
+    });
 
     return result;
 }

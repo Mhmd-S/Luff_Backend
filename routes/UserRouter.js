@@ -36,6 +36,8 @@ router.post('/like-user', checkAuth, UserControllers.likeUser);
 
 router.post('/reject-user', checkAuth, UserControllers.rejectUser);
 
+router.post('/block-user', checkAuth, UserControllers.blockUser);
+
 // Add validation here
 router.delete('/delete-profile-pic', checkAuth, UserControllers.deleteProfilePicture);
 

@@ -34,6 +34,11 @@ export const getUsers = async(amount, user) => {
     return result;
 }
 
+export const blockUser = async(userId, blockedUserId) => {
+    const result = await User.findByIdAndUpdate(userId, { $push: { blockedUsers: blockedUserId } }).exec();
+    return result;
+}
+
 export const addToRejectedUsers = async(userId, rejectedUserId) => {
     const result = await User.findByIdAndUpdate(userId, { $push: { rejectedUsers: rejectedUserId } }).exec();
     return result;

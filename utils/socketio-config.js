@@ -84,8 +84,22 @@ const configureSocketEventHandlers = (io) => {
 // Handlers for Socket.IO events
 // Handle the 'send-message' event
 const handleSendMessage = async (io, socket, userId, data) => {
+
+	// Check if the recipient is blocked
+	if (socket.request.user.blockedUsers.includes(data.recipientId)) {
+		errorHandlers.handleSocketError('User is blocked', io, socket.id);
+		return;
+	}
+
 	const recipientId = data.recipient._id;
 	const recipientSocketId = userSocketMap.get(recipientId);
+
+	// Check if the recipient has blocked the sender
+	const recipientBlocked = await User.getUserById(recipientId);
+	if (recipientBlocked.blockedUsers.includes(userId)) {
+		errorHandlers.handleSocketError('User is blocked', io, socket.id);
+		return;
+	}
 
 	data.sender = {
 		_id: userId,
