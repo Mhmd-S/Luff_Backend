@@ -17,15 +17,40 @@ router.post('/login', UserControllers.loginUser);
 
 router.post('/logout', checkAuth, UserControllers.logoutUser);
 
-router.put('/update-name', checkAuth, validationMiddleware.nameValidation, UserControllers.updateName);
+router.put(
+	'/update-name',
+	checkAuth,
+	validationMiddleware.nameValidation,
+	UserControllers.updateName
+);
 
-router.put('/update-dob', checkAuth, validationMiddleware.dobValidation, UserControllers.updateDOB);
+router.put(
+	'/update-dob',
+	checkAuth,
+	validationMiddleware.dobValidation,
+	UserControllers.updateDOB
+);
 
-router.put('/update-bio', checkAuth, validationMiddleware.bioValidation, UserControllers.updateBio);
+router.put(
+	'/update-bio',
+	checkAuth,
+	validationMiddleware.bioValidation,
+	UserControllers.updateBio
+);
 
-router.put('/update-gender', checkAuth, validationMiddleware.genderValidation, UserControllers.updateGender);
+router.put(
+	'/update-gender',
+	checkAuth,
+	validationMiddleware.genderValidation,
+	UserControllers.updateGender
+);
 
-router.put('/update-orientation', checkAuth, validationMiddleware.orientationValidation, UserControllers.updateOrientation);
+router.put(
+	'/update-orientation',
+	checkAuth,
+	validationMiddleware.orientationValidation,
+	UserControllers.updateOrientation
+);
 
 router.put('/onboard-next', checkAuth, UserControllers.onboardNext);
 
@@ -39,6 +64,10 @@ router.post('/reject-user', checkAuth, UserControllers.rejectUser);
 router.post('/block-user', checkAuth, UserControllers.blockUser);
 
 // Add validation here
-router.delete('/delete-profile-pic', checkAuth, UserControllers.deleteProfilePicture);
+router.delete(
+	'/delete-profile-pic',
+	checkAuth,
+	UserControllers.deleteProfilePicture
+);
 
 export default router;
