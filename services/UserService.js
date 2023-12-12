@@ -1,4 +1,5 @@
 import User from '../models/User';
+import Report from '../models/Report';
 import ResetToken from '../models/ResetToken';
 
 export const getUserById = async (userId) => {
@@ -53,6 +54,16 @@ export const blockUser = async (userId, blockedUserId) => {
 		$push: { blockedUsers: blockedUserId },
 	}).exec();
 	return result;
+};
+
+export const reportUser = async(reporter, reported, reason) => {
+	const report = new Report({
+		reporter: reporter,
+		reported: reported,
+		reason: reason,
+	});
+
+	await report.save();
 };
 
 export const addToRejectedUsers = async (userId, rejectedUserId) => {

@@ -154,6 +154,22 @@ export const blockUser = async (req, res, next) => {
 	res.status(200).json({ status: 'success', message: 'User blocked' });
 };
 
+export const reportUser = async (req, res, next) => {
+	try {
+		await UserService.reportUser(
+			req.user._id,
+			req.query.userId,
+			req.body.reason
+		);
+
+		await UserService.blockUser(req.user._id, req.query.userId);
+	} catch (err) {
+		return next(new AppError(500, err));
+	}
+
+	res.status(200).json({ status: 'success', message: 'User reported' });
+};
+
 export const updateDOB = async (req, res, next) => {
 	try {
 		await UserService.updateDOB(req.user._id, req.body.dob);
