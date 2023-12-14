@@ -2,6 +2,7 @@
 import { Server } from 'socket.io';
 import { updateMessageToSeen, putChat } from '../controllers/ChatController.js';
 import { errorHandlers } from './errorHandler';
+import * as UserService from '../services/UserService.js';
 
 const userSocketMap = new Map();
 let io;
@@ -94,10 +95,11 @@ const handleSendMessage = async (io, socket, userId, data) => {
 	const recipientId = data.recipient._id;
 	const recipientSocketId = userSocketMap.get(recipientId);
 
-	// Check if the recipient has blocked the sender
-	const recipientBlocked = await User.getUserById(recipientId);
+	// Check if the user has blocked the recipient
+	const recipientBlocked = await UserService.getUserById(recipientId);
 	if (recipientBlocked.blockedUsers.includes(userId)) {
 		errorHandlers.handleSocketError('User is blocked', io, socket.id);
+		console.log(123)
 		return;
 	}
 

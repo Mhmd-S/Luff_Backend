@@ -53,6 +53,9 @@ app.use('/chat', ChatRouter);
 // Populate database with fake data
 // Fix the images
 // populateUsers();
+// populateChats();
+// populateMessages();
+// populateMessagesToChats();
 
 // IO Server setup
 createSocketServer(httpServer, sessionMiddleware, passport);

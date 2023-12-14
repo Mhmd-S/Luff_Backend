@@ -122,7 +122,7 @@ export const rejectUser = async (req, res, next) => {
 			return next(new AppError(400, 'User already rejected'));
 		}
 
-		if (rejectedUser.blockedUsers.includes(user._id)) {
+		if (rejectedUser.blockedUsers.includes(req.user._id)) {
 			return next(new AppError(400, 'Can not reject user'));
 		}
 
@@ -146,6 +146,11 @@ export const rejectUser = async (req, res, next) => {
 
 export const blockUser = async (req, res, next) => {
 	try {
+
+		if (req.user.blockedUsers.includes(req.query.userId)) {
+			return next(new AppError(400, 'User already blocked'));
+		}
+
 		await UserService.blockUser(req.user._id, req.query.userId);
 	} catch (err) {
 		return next(new AppError(500, err));
