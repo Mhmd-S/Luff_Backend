@@ -85,7 +85,6 @@ const configureSocketEventHandlers = (io) => {
 // Handlers for Socket.IO events
 // Handle the 'send-message' event
 const handleSendMessage = async (io, socket, userId, data) => {
-
 	// Check if the recipient is blocked
 	if (socket.request.user.blockedUsers.includes(data.recipientId)) {
 		errorHandlers.handleSocketError('User is blocked', io, socket.id);
@@ -95,11 +94,10 @@ const handleSendMessage = async (io, socket, userId, data) => {
 	const recipientId = data.recipient._id;
 	const recipientSocketId = userSocketMap.get(recipientId);
 
-	// Check if the user has blocked the recipient
+	// Check if either users have blocked the other
 	const recipientBlocked = await UserService.getUserById(recipientId);
-	if (recipientBlocked.blockedUsers.includes(userId)) {
+	if (recipientBlocked.blockedUsers.includes(userId) || socket.request.user.blockedUsers.includes(recipientId)) {
 		errorHandlers.handleSocketError('User is blocked', io, socket.id);
-		console.log(123)
 		return;
 	}
 
@@ -118,15 +116,19 @@ const handleSendMessage = async (io, socket, userId, data) => {
 	try {
 		let saveMessage = await putChat(data.sender, data.chatId, data.message);
 		// Send the message to the intended recipient if they are online
-		if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {   
+		if (recipientSocketId && io.sockets.sockets.has(recipientSocketId)) {
 			io.to(recipientSocketId).emit('receive-message', saveMessage);
+		}
+
+		if (io.sockets.sockets.has(socket.id)) {
 			// Send the message to the sender too
 			saveMessage.recipient = {
 				_id: recipientId,
 				name: data.recipient.name,
 				profilePictures: data.recipient.profilePictures,
 			};
-			socket.emit('sent-message', saveMessage);
+			io.to(socket.id).emit('sent-message', saveMessage);
+			console.log('sent');
 		}
 	} catch (err) {
 		errorHandlers.handleSocketError(err, io, socket.id);
@@ -150,25 +152,24 @@ const disassociateSocketFromUser = (userId) => {
 };
 
 // Function to emit a match
-export const emitMatch = async(user, likedUser, chat) => {
-
+export const emitMatch = async (user, likedUser, chat) => {
 	user = {
 		_id: user._id,
 		name: user.name,
 		profilePictures: user.profilePictures,
 	};
-	
+
 	likedUser = {
 		_id: likedUser._id,
 		name: likedUser.name,
 		profilePictures: likedUser.profilePictures,
 	};
 
-	const match = { 
+	const match = {
 		chatId: chat._id,
 		sender: user,
 		recipient: likedUser,
-	}
+	};
 
 	const userSocketId = userSocketMap.get(user._id.toString());
 	if (userSocketId && io.sockets.sockets.has(userSocketId)) {

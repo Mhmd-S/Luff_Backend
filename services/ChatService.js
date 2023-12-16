@@ -32,7 +32,7 @@ export const getChats = async (userID, pageNumber) => {
 	const nPerPage = 20;
 	const skipFormula = pageNumber > 0 ? (pageNumber - 1) * nPerPage : 0;
 
-	const result = await Chat.find(
+	const chats = await Chat.find(
 		{ participants: { $in: [userID] } },
 		'participants lastMessage updatedAt'
 	)
@@ -44,16 +44,15 @@ export const getChats = async (userID, pageNumber) => {
 		.exec();
 
 	// Filter out chats where either users are blocked
-	result.forEach((chat, index) => {
-		if (
-			chat.participants[0].blockedUsers.includes(chat.participants[1]._id) ||
-			chat.participants[1].blockedUsers.includes(chat.participants[0]._id)
-		) {
-			result.splice(index, 1);
-		}
+	const filteredChats = chats.filter((chat) => {
+		const [participant1, participant2] = chat.participants;
+		return (
+			!participant1.blockedUsers.includes(participant2._id) &&
+			!participant2.blockedUsers.includes(participant1._id)
+		);
 	});
 
-	return result;
+	return filteredChats;
 };
 
 export const getUndreadChatsCount = async (userId) => {
