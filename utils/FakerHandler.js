@@ -17,9 +17,9 @@ export const populateUsers = async() => {
             bio: faker.lorem.paragraph({min: 2, max:3}),
             onboardStep: 2,
             profilePictures: { 
-                            '0': faker.image.urlLoremFlickr({ category: gnd }), 
-                            '1': faker.image.urlLoremFlickr({ category: gnd }), 
-                            '2': faker.image.urlLoremFlickr({ category: gnd }),
+                            '0': faker.image.urlLoremFlickr({ category: gnd, width:300, heig:600 }), 
+                            '1': faker.image.urlLoremFlickr({ category: gnd, width:300, heig:600 }),
+                            '2': faker.image.urlLoremFlickr({ category: gnd, width:300, heig:600 }),
                             }
         });
   

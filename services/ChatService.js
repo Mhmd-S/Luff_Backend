@@ -39,7 +39,7 @@ export const getChats = async (userID, pageNumber) => {
 		.sort({ updatedAt: -1 })
 		.skip(skipFormula)
 		.limit(nPerPage)
-		.populate('participants', 'name profilePictures blockedUsers')
+		.populate('participants', 'name profilePictures bio dob blockedUsers')
 		.populate('lastMessage', 'content updatedAt seenBy')
 		.exec();
 
