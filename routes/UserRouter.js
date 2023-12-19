@@ -7,7 +7,7 @@ let router = express.Router();
 
 router.get('/check-auth', UserControllers.checkAuth);
 
-router.get('/get-user', checkAuth, UserControllers.getUser);
+// router.get('/get-user', checkAuth, UserControllers.getUser);
 
 router.get('/get-users', checkAuth, UserControllers.getUsers);
 

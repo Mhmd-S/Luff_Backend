@@ -14,6 +14,12 @@ export const requestResetPassword = async(req, res, next) => {
             return next(new AppError(400, 'Email not registered'));
         }
 
+        // Check if the user already has a reset token
+        const prevResetToken = await UserService.getResetToken(userInfo._id);
+        if (prevResetToken?.token) {
+            return next(new AppError(400, 'Reset token already sent. Please check your email. If you did not receive an email, please try again in 1 hour.'));
+        }
+
         const userId = userInfo._id;
 
         // Delete any existing reset tokens

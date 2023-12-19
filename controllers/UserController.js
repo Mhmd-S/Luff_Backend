@@ -26,6 +26,8 @@ export const getUsers = async (req, res, next) => {
 };
 
 export const getSelf = async (req, res, next) => {
+	const propertiesToDelete = ['matches', 'likedUsers', 'rejectedUsers'];
+	propertiesToDelete.forEach(property => delete req.user[property]);
 	return res.status(200).json({ status: 'success', data: req.user });
 };
 

@@ -127,8 +127,10 @@ const handleSendMessage = async (io, socket, userId, data) => {
 				name: data.recipient.name,
 				profilePictures: data.recipient.profilePictures,
 			};
-			io.to(socket.id).emit('sent-message', saveMessage);
-			console.log('sent');
+			console.log(saveMessage)
+			io.to(socket.id).emit('sent-message-chat', saveMessage);
+			io.to(socket.id).emit('sent-message-contacts', saveMessage);
+			console.log('sent to sender');
 		}
 	} catch (err) {
 		errorHandlers.handleSocketError(err, io, socket.id);

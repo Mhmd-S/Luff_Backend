@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker';
 export const populateUsers = async() => {
     for (let i = 0; i < 25; i++) {
         const gender = faker.number.int({ min: 1, max: 2 });
-        const gnd = 2 == 1 ? 'asian,man' : 'asian,woman'
+        const gnd = 2 == 1 ? 'asian,man' : 'asian,woman,hot'
         const user = new User({
             name: faker.person.fullName({sex:'female'}),
             password: faker.internet.password(),
