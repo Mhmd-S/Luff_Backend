@@ -1,6 +1,7 @@
 import User from '../models/User';
 import Report from '../models/Report';
 import ResetToken from '../models/ResetToken';
+import Feedback from '../models/Feedback';
 
 export const getUserById = async (userId) => {
 	const result = await User.findById(
@@ -175,3 +176,13 @@ export const deleteResetToken = async (userId) => {
 	const result = await ResetToken.findOneAndDelete({ userId: userId }).exec();
 	return result;
 };
+
+
+export const receiveFeedback = async (userId, feedback) => {
+	const newFeedback = new Feedback({
+		userId: userId,
+		feedback: feedback,
+	})
+	const result = await newFeedback.save();
+	return result;
+}

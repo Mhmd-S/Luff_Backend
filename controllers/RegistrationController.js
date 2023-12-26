@@ -38,11 +38,11 @@ export const verifyEmail = async(req,res,next) => {
         return next(new AppError(400, 'Code already sent. Wait for 5 minutes to request new code.'));
     }
 
-    // Generate code
-    const code = uuidv4();
+    // Generate code 5 digit numerical code
+    const code = uuidv4().substring(0, 5);
 
     const to = req.body.email;
-    const subject = 'Verification Code';
+    const subject = `${code} UniLuff verification code.`;
     const message = `Your verification code is ${code}`;
 
     // Save email to database with email and code

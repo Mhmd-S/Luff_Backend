@@ -70,6 +70,13 @@ router.post(
 	UserControllers.reportUser
 );
 
+router.post(
+	'/feedback',
+	checkAuth,
+	validationMiddleware.feedbackValidation,
+	UserControllers.receiveFeedback
+);
+
 // Add validation here
 router.delete(
 	'/delete-profile-pic',

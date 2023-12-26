@@ -26,7 +26,7 @@ const validationMiddleware = {
 	],
 	registerUserValidation: [
 		body('email')
-			.matches(/TP[0-9]{6}@mail.apu.edu.my/)
+			.matches(/^(TP\d{6}@mail\.apu\.edu\.my|\d{7}@sd\.taylors\.edu\.my|d{8}@imail\.sunway\.apu\.edu\.my)$/)
 			.withMessage('Invalid email address')
 			.escape(),
 		body('password')
@@ -39,7 +39,7 @@ const validationMiddleware = {
 	],
 	loginUserValidation: [
 		body('email')
-			.matches(/TP[0-9]{6}@mail.apu.edu.my/)
+			.matches(/^(TP\d{6}@mail\.apu\.edu\.my|\d{7}@sd\.taylors\.edu\.my|d{8}@imail\.sunway\.apu\.edu\.my)$/)
 			.withMessage('Invalid email address')
 			.escape(),
 		body('password')
@@ -52,13 +52,15 @@ const validationMiddleware = {
 	],
 	emailValidation: [
 		body('email')
-			.matches(/TP[0-9]{6}@mail.apu.edu.my/)
+			.matches(/^(TP\d{6}@mail\.apu\.edu\.my|\d{7}@sd\.taylors\.edu\.my|d{8}@imail\.sunway\.apu\.edu\.my)$/)
 			.withMessage('Invalid email address')
 			.escape(),
 		checkError,
 	],
 	codeValidation: [
-		body('code').isUUID(4).withMessage('Invalid code').escape(),
+		body('code')
+		.matches(/^[a-zA-Z0-9]{5}$/)
+		.withMessage('Invalid code').escape(),
 		checkError,
 	],
 	dobValidation: [
@@ -104,6 +106,13 @@ const validationMiddleware = {
 		body('reason')
 			.isLength({ min: 25, max: 250 })
 			.withMessage('Invalid reason')
+			.escape(),
+		checkError,
+	],
+	feedbackValidation: [
+		body('feedback')
+			.isLength({ min: 25, max: 250 })
+			.withMessage('Invalid feedback')
 			.escape(),
 		checkError,
 	],

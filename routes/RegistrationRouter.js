@@ -4,7 +4,8 @@ import validationMiddleware from '../middlewares/form-validation/userRouteValida
 
 let router = express.Router();
 
-router.post('/verify-email', validationMiddleware.emailValidation, RegistrationController.verifyEmail);
+//
+router.post('/verify-email', RegistrationController.verifyEmail);
 
 router.post('/verify-code', validationMiddleware.codeValidation, RegistrationController.checkRegistrationCode);
 

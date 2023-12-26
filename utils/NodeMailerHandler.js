@@ -10,12 +10,25 @@ import nodemailer from 'nodemailer';
 });
 
 export const sendEmail = (to, subject, message) => {
+
+    const emailHTML = `
+        <html>
+            <body>
+                <h1>Verification Code for UniLuff Account</h1>
+                <p>${message}</p>
+                <p>Welcome to UniLuff!</p>
+                <p>Regards,</p>
+                <p>UniLuff Team</p>
+            </body>
+        </html>
+    `;
+
     // Email transporter configuration
     const mailOptions = {
         from: process.env.EMAIL_ADDRESS,
         to: to,
         subject: subject,
-        text: message,
+        html: emailHTML
     };
 
     // Send email

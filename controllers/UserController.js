@@ -27,7 +27,7 @@ export const getUsers = async (req, res, next) => {
 
 export const getSelf = async (req, res, next) => {
 	const propertiesToDelete = ['matches', 'likedUsers', 'rejectedUsers'];
-	propertiesToDelete.forEach(property => delete req.user[property]);
+	propertiesToDelete.forEach((property) => delete req.user[property]);
 	return res.status(200).json({ status: 'success', data: req.user });
 };
 
@@ -148,7 +148,6 @@ export const rejectUser = async (req, res, next) => {
 
 export const blockUser = async (req, res, next) => {
 	try {
-
 		if (req.user.blockedUsers.includes(req.query.userId)) {
 			return next(new AppError(400, 'User already blocked'));
 		}
@@ -245,6 +244,7 @@ export const addProfilePicture = [
 			return next(new AppError(400, 'No profile picture uploaded'));
 		}
 
+		console.log(123)
 		const profilePicturesKeys = Object.keys(req?.files?.profilePicture);
 
 		// Check if there are any profile pictures uploaded
@@ -255,11 +255,12 @@ export const addProfilePicture = [
 
 			// Add profile picture's link to the user's profile
 			try {
-				await UserService.addProfilePicture(
+				const result = await UserService.addProfilePicture(
 					req.user._id,
 					profilePictureUrl,
 					req.body.picNum
 				);
+				console.log(result);
 			} catch (err) {
 				return next(new AppError(500, err));
 			}
@@ -354,4 +355,16 @@ export const checkAuth = (req, res, next) => {
 	}
 
 	return next(new AppError(401, 'User not authenticated'));
+};
+
+export const receiveFeedback = async (req, res, next) => {
+	try {
+		await UserService.receiveFeedback(req.user._id, req.body.feedback);
+	} catch (err) {
+		return next(new AppError(500, err));
+	}
+
+	return res
+		.status(200)
+		.json({ status: 'success', message: 'Feedback submitted' });
 };
