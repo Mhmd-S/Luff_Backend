@@ -37,7 +37,7 @@ export const getUsers = async (amount, user) => {
 					...blockedUsers,
 					...rejectedUsers,
 					...likedUsers,
-					matchedUsers,
+					...matchedUsers,
 					user._id,
 				],
 			},

@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker';
 export const populateUsers = async() => {
     for (let i = 0; i < 25; i++) {
         const gender = faker.number.int({ min: 1, max: 2 });
-        const gnd = 2 == 1 ? 'asian,man' : 'asian,woman,hot'
+        const gnd =  'Asian,Female'
         const user = new User({
             name: faker.person.fullName({sex:'female'}),
             password: faker.internet.password(),
@@ -16,6 +16,7 @@ export const populateUsers = async() => {
             orientation: faker.number.int({ min: 1, max: 1 }),
             bio: faker.lorem.paragraph({min: 2, max:3}),
             onboardStep: 2,
+            likedUsers: [],
             profilePictures: { 
                             '0': faker.image.urlLoremFlickr({ category: gnd, width:300, heig:600 }), 
                             '1': faker.image.urlLoremFlickr({ category: gnd, width:300, heig:600 }),
@@ -33,7 +34,7 @@ export const populateChats = async() => {
     const users = await User.find({}, '_id').exec();
     for (let i = 0; i < 20; i++) {
         const chat = new Chat({
-            participants: ['655ed182ecee177b4a5f2ad1', users[Math.floor(Math.random() * users.length)]._id],
+            participants: ['658ad7fbca37917399a779ac', users[Math.floor(Math.random() * users.length)]._id],
             messages: [],
             lastMessage: null,
         });
@@ -46,13 +47,13 @@ export const populateMessages = async() => {
     const chats = await Chat.find().exec();
     for (let i = 0; i < 20; i++) {
         
-        const senderid = faker.datatype.boolean() ? '655ed182ecee177b4a5f2ad1' : chats[Math.floor(Math.random() * chats.length)].participants[1];
+        const senderid = faker.datatype.boolean() ? '658ad7fbca37917399a779ac' : chats[Math.floor(Math.random() * chats.length)].participants[1];
         
         const chatId = chats[Math.floor(Math.random() * chats.length)]._id;
         
         const message = new Message({
             senderId: senderid,
-            recipientId: senderid === '655ed182ecee177b4a5f2ad1' ? chats[Math.floor(Math.random() * chats.length)].participants[1] : '655ed182ecee177b4a5f2ad1',    
+            recipientId: senderid === '658ad7fbca37917399a779ac' ? chats[Math.floor(Math.random() * chats.length)].participants[1] : '658ad7fbca37917399a779ac',    
             content: faker.lorem.sentence(),
             chatId: chatId,
             seenBy: [senderid],

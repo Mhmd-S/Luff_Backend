@@ -244,7 +244,6 @@ export const addProfilePicture = [
 			return next(new AppError(400, 'No profile picture uploaded'));
 		}
 
-		console.log(123)
 		const profilePicturesKeys = Object.keys(req?.files?.profilePicture);
 
 		// Check if there are any profile pictures uploaded

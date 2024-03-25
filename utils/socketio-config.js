@@ -176,5 +176,6 @@ export const emitMatch = async (user, likedUser, chat) => {
 	const userSocketId = userSocketMap.get(user._id.toString());
 	if (userSocketId && io.sockets.sockets.has(userSocketId)) {
 		io.to(userSocketId).emit('match', match);
+		console.log('Match Sent to User', user._Id);
 	}
 };

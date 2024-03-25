@@ -2,6 +2,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import User from '../models/User';
+import { AppError } from '../utils/errorHandler';
 
 // Create a function to configure a local strategy for a given user type
 const configureLocalStrategy = (userModel, strategyName) => {
@@ -79,7 +80,7 @@ const configurePassport = () => {
 
         done(null, userData);
       } else {
-        done(new Error('User not found'));
+        done(new AppError(401, 'Unauthorized'));
       }
     } catch (error) {
       done(error);

@@ -51,7 +51,7 @@ app.use('/reset', ResetRouter);
 app.use('/chat', ChatRouter);
 
 // Populate database with fake data
-// populateUsers();
+populateUsers();
 // populateChats();
 // populateMessages();
 // populateMessagesToChats();
